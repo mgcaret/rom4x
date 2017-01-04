@@ -98,11 +98,11 @@ msg3	.db $05,$b0,"SURE? ",$00
 	.dsb boot4x - *, 0
 * = boot4x
 	jsr gobanner		; "Apple //c"
+	jsr rdrecov		; try to recover ramdisk
 	lda power2 + rx_mslot	; get action saved by reset4x
 	beq boot4		; if zero, continue boot
 	ldx #(msg2-msg1)	; short banner offset
 	jsr disp		; display it
-	jsr rdrecov		; try to recover ramdisk
 	lda power2 + rx_mslot	; boot selection
 btc2	cmp #$02		; clear ramcard
 	bne btc3
@@ -153,39 +153,32 @@ bootsl	ldx #$00		; low byte of slot
 bootadr	stx $0			; store address
 	sta $1			; return to bank 0 does jmp (0)
 endbt4x jmp gobt4x		; continue boot
-rdrecov ldy #rx_mslot		; attempt to recover ramdisk
-	ldx #rx_devno
+rdrecov	jsr rdinit		; init ramcard
 	lda pwrup,y		; get power up flag
 	cmp #pwrbyte		; already initialized?
-	bne checkrd		; continue if not initialized
-	rts			; exit if initialized
-checkrd jsr testsize		; does not wreck x or y
+	beq recovdn		; exit if initialized
+	jsr testsize		; does not wreck x or y
 	lda numbanks,y		; get discovered # banks
-	bne ckrd1		; continue if size > 0
-	rts			; exit if no mem
-ckrd1	stz addrl,x		; set slinky address 0
+	beq recovdn		; no mem
+	stz addrl,x		; set slinky address 0
 	stz addrm,x
 	stz addrh,x
 	lda data,x		; start compare to ProDOS boot block
 	cmp #$01
-	beq ckrd2
-	rts			; not ProDOS
-ckrd2	lda data,x
+	bne recovdn		; not ProDOS
+	lda data,x
 	cmp #$38
-	beq ckrd3
-	rts			; not ProDOS
-ckrd3	lda data,x
+	bne recovdn		; not ProDOS
+	lda data,x
 	cmp #$b0
-	beq dorecov
-	rts			; not ProDOS
-dorecov	lda #pwrbyte
+	bne recovdn		; not ProDOS
+	lda #pwrbyte
 	sta pwrup,y		; set power byte
 	lda "R"			; tell user
 	sta $7d0		; on screen
-	rts
+recovdn	rts
 ; zero ram card space
-rdclear ldy #rx_mslot
-	ldx #rx_devno
+rdclear	jsr rdinit		; init ramcard
 	jsr testsize		; get size
 	lda #$c0		; 'A' - 1
 	sta $400		; upper left corner
@@ -216,6 +209,10 @@ clrdone	ldy #rx_mslot
 	sta numbanks,y
 	lda #$a0		; ' '
 	sta $400		; clear progress
+	rts
+rdinit	bit rx_mslot *$100	; activate registers
+	ldy #rx_mslot		; slot offset
+	ldx #rx_devno		; register offset
 	rts
 ; next is snippet of code to boot external 5.25
 bootext	sei
