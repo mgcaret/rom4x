@@ -1,3 +1,7 @@
+# NOTICE:  NOT READY for most people to use on a real //c just yet
+
+This notice will be removed when I feel that it is.
+
 # ROM 4X by MG
 
 ROM 4X is an enhancement to the Apple //c version 4 firmware ROM.
