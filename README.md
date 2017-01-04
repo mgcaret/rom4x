@@ -12,7 +12,7 @@ It adds the following features to the Apple //c version 4 firmware:
     - Execute the machine and RAM card diagnostics.
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
 
-The first feature listed above is the *raison d'etre* for the existence of this project.  The larger story is down below but in short:  The Apple //c memory card driver keeps certain information in the "screen holes" in main memory, which are required to use the memory card as a RAM disk.  Should these screen hole values disappear, the card is re-initialized to empty when ProDOS boots.  This happens even when the card is battery-backed and already has a RAM disk.  The card data is not damaged until ProDOS boots, but if you attempt to manually boot the RAM disk it will say "UNABLE TO START FROM MEMORY CARD" because the screen hole values are not initialized.
+The first feature listed above is the *raison d'etre* for this project.  The larger story is down below but in short:  The Apple //c memory card driver keeps certain information in the "screen holes" in main memory, which are required to use the memory card as a RAM disk.  Should these screen hole values disappear, the card is re-initialized to empty when ProDOS boots.  This happens even when the card is battery-backed and already has a RAM disk.  The card data is not damaged until ProDOS boots, but if you attempt to manually boot the RAM disk it will say "UNABLE TO START FROM MEMORY CARD" because the screen hole values are not initialized.
 
 This firmware enhancement identifies a ProDOS boot block on the RAM disk and, if found, restores the appropriate screen holes to make the RAM disk bootable and prevent ProDOS from re-initializing it.
 
