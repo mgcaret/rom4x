@@ -4,7 +4,7 @@ ROM 4X is an enhancement to the Apple //c version 4 firmware ROM.
 
 It adds the following features to the Apple //c version 4 firmware:
 
-  - Identifies and reinstates a ProDOS-formatted RAM disk from battery-backed expansion memory (see below).
+  - Identifies and reinstates a *bootable* (it must have a boot block!) ProDOS-formatted RAM disk from battery-backed expansion memory (see below).
   - Provides a menu of various tools upon pressing Ctrl+Closed-Apple+Esc (or holding Closed-Apple when powering up), that let you:
     - Enter the monitor unconditionally.
     - Reboot the machine (enter standard boot sequence).
