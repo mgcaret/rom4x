@@ -187,9 +187,9 @@ Well, as we know, adding new code to existing firmware is a lot harder than disa
 
 But now I at least have some initial requirements:
 
-  1. Identify an existing, hopefully bootable RAM disk.
-  2. If it exists, prevent it from being re-initialized by setting the two screen holes to the proper values.
-  3. If no special action is taken, everything should "look normal."
+>  1: Identify an existing, hopefully bootable RAM disk.
+>  2: If it exists, prevent it from being re-initialized by setting the two screen holes to the proper values.
+>  3: If no special action is taken, everything should "look normal."
 
 The Apple II RAM card code is more simple than, say, the Applied Engineering RamFactor card, and I haven't seen anything that documents being able to boot DOS 3.3 or Pascal from it, so I decided that I only needed to see if the RAM disk was ProDOS and bootable.  So I would solve the first requirement by checking for a ProDOS boot block, conveniently starting at location zero on the card.
 
@@ -201,31 +201,31 @@ Then I thought to myself... what if the RAM disk is screwed up, and we keep re-i
 
 Nah.  Why not detect if the closed-apple key is pressed with ctrl+reset and clear out the RAM disk?
 
-  4. Provide a way to erase a messed up RAM disk.
+>  4: Provide a way to erase a messed up RAM disk.
 
 Well, that wasn't so bad.  But what if the user doesn't want to erase it outright? Perhaps they want to try to recover some data.  Maybe we can leave it corrupted and just boot something else.
 
-  5. Provide a way to skip booting the RAM disk.
+>  5: Provide a way to skip booting the RAM disk.
 
 Well that's at least two options, and between the two apple key+reset combinations, no room for more than one additional action, so maybe that action should be a menu.
 
-  6. Present a menu to the user to decide what action to take.
+>  6: Present a menu to the user to decide what action to take.
 
 Well since we are doing that, it's probably easy to get the IIc to try to boot whatever device you want, and maybe the user doesn't want to do any of the things on the menu.
 
-  7.  Let the user select a variety of boot devices.
+>  7:  Let the user select a variety of boot devices.
 
 Hell, while we are at it, let's give some easy access to internal functionality that requires more keys to be held down or calling routines in memory with BASIC or monitor commands.
 
-  8.  Let the user get access to the internal diagnostic routines.
+>  8:  Let the user get access to the internal diagnostic routines.
 
-Then, there was that guy that wanted to be able to boot an external 5.25 drive like the original //c firmware had.
+Then, there was that guy that wanted to be able to boot an external 5.25 drive like the original //c firmware had.  This turned out to be fairly easy to do.
 
-  9.  Let the user boot an external 5.25 drive.
+>  9:  Let the user boot an external 5.25 drive.
 
 Well, I coded all the above up over the course of two days (short story, keep reading for longer version) and then I had another feature:
 
-  10.  Don't make it too easy to trash the RAM disk accidentally by picking menu option 2 and 4.
+>  10:  Don't make it too easy to trash the RAM disk accidentally by picking menu option 2 and 4.
 
 Sigh.  Now it's a real software project.
 
