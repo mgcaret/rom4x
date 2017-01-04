@@ -145,6 +145,43 @@ The Rakefile uses this information to patch the original ROM 4 and produce the R
 
 One file, `iic.defs` is included by all of the other source files.  This has entry points, origins, and various RAM locations defined in it for use by the other source code.
 
+### Test Scenarios
+
+#### Basic Functional Tests
+
+  1. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
+    - Expected:  The system boots the same as an unmodified ROM 4.
+  2. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
+    - Expected:  The system boots from RAM disk, an inverse R may appear on line 24 of the display.
+  3. Power on the system with the ca key pressed or use ctrl-ca-reset.
+    - Expected:  The menu is displayed.
+  4. RAM disk recovery:
+    1. Battery-backed RAM present with bootable ProDOS RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
+      - Expected:  The system boots from RAM disk.
+    2. Battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
+      - Expected:  The system boots from RAM disk.
+
+#### Menu Item Functional Tests
+
+All cases:  When any menu option is selected, the "ROM 4X MM/DD/YY" message is displayed on the bottom of the screen.
+
+  0. Monitor
+    - Expected:  We are dropped into the monitor immediately.
+  1. Reboot
+    - Expected:  System boots as normal.
+  2. Zero RAM Card and Reboot
+    - Expected:  Reboot if no card RAM present.  Otherwise, counter appears in upper left corner and card RAM is cleared.
+  3. Diagnostics
+    - Expected:  System enters built-in diagnostics as if ctrl-oa-ca-reset was pressed.
+  4. RAM Card Diagnostics
+    - Expected:  System enters RAM card diagnostics if card RAM present, then/or (no mem) drops to monitor when exited by failure or user escape key.
+  5. Boot SmartPort
+    - Expected:  The system boots from a SmartPort device, skipping the RAM card and 5.25 floppy drives.
+  6. Boot Internal 5.25
+    - Expected:  The system boots from the internal 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
+  7. Boot External 5.25
+    - Expected:  The system boots from the external 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
+
 # The Whole Story
 
 The Apple II Plus was the first computer my family owned.  It's what I learned to program on.  We spent hours at the keyboard typing in programs from magazines, and eventually I learned to modify them and write my own.  As technology progressed, I switched to PCs like almost everyone else and largely forgot about the Apple II after the 90s.  But, I held on to most of the stuff I'd acquired for it, much of which became cheap in the years after Apple discontinued the product line.
