@@ -158,7 +158,7 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
   4. RAM disk recovery:
     1. Battery-backed RAM present with bootable ProDOS RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
       - Expected:  The system boots from RAM disk.
-    2. Battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
+    2. Non-battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
       - Expected:  The system boots from RAM disk.
 
 #### Menu Item Functional Tests
@@ -184,7 +184,7 @@ All cases:  When any menu option is selected, the "ROM 4X MM/DD/YY" message is d
 
 # The Whole Story
 
-The Apple II Plus was the first computer my family owned.  It's what I learned to program on.  We spent hours at the keyboard typing in programs from magazines, and eventually I learned to modify them and write my own.  As technology progressed, I switched to PCs like almost everyone else and largely forgot about the Apple II after the 90s.  But, I held on to most of the stuff I'd acquired for it, much of which became cheap in the years after Apple discontinued the product line.
+The Apple II Plus was the first computer my family owned.  It's what I learned to program on.  We spent hours at the keyboard typing in programs from magazines, and eventually I learned to modify them and write my own.  As technology progressed, I switched to PCs like almost everyone else and largely forgot about the Apple II after the 90s.  I still had an interest in my Apple IIs and managed to get hold of some more gear, including a //c and a couple of IIgs machines.  The prices bottomed out a few years after Apple discontinued the line.  Eventually I moved on and boxed it all up, sold a bit, but I held on to most of the interesting stuff I'd acquired.
 
 ## The Beginning and the New Old
 
@@ -194,7 +194,7 @@ So then I go searching around the net only to discover that not only is there a 
 
 Jumping into this new hardware for old computers craze, I bought a [Ram Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144#review) from [A2 Heaven](http://www.a2heaven.com/) and was excited to try out the whopping (really!) 1 MB of battery-backed memory in it, as well as the clock.  I formatted the card, loaded up ProDOS, and rebooted... Instant-on!  Much fast!
 
-Then I powered down for a while to do non-hobby things, and instead of a super fast boot to ProDOS, I got the the familiar clunking of the Apple 5 1/4 floppy drive recalibrating.  I thought to myself that surely I was doing something wrong, so I rebooted ProDOS and found the card in its initial state without what I had copied on it.
+Then I powered down for a while to do non-hobby things.  Upon return, instead of a super fast boot to ProDOS, I got the the familiar clunking of the Apple 5 1/4 floppy drive recalibrating.  I thought to myself that surely I was doing something wrong, so I rebooted ProDOS and found the card in its initial state without what I had copied on it.
 
 Bummer.
 
