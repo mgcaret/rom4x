@@ -1,0 +1,49 @@
+source_rom = "iic_rom4.bin"
+dest_rom = "iic_rom4x.bin"
+rom_base = 0xc000
+
+source_files = Rake::FileList.new('*.s')
+
+desc "Default: clean and build it"
+task :default => [:clean, :assemble, :build_rom] do
+  sh "ls -l #{dest_rom}"
+end
+
+desc "Clean object files"
+task :clean do
+  sh "rm -f #{dest_rom}"
+  sh "rm -f *.o65"
+  sh "rm -f *.o65.lbl"
+end
+
+desc "Assemble all source files"
+task :assemble => source_files.ext('.o65')
+
+rule ".o65" => ".s" do |t|
+  sh "xa -c -o #{t.name} -l #{t.name}.lbl #{t.source}"
+end
+
+desc "Build ROM"
+task :build_rom => [:assemble] do
+  puts "Building ROM image..."
+  obj_files = Rake::FileList.new('*.o65')
+  rom = File.read(source_rom)
+  obj_files.each do |t|
+    if t =~ /B(\h)_(\h{4})/
+      bnum = $1.to_i(16)
+      badd = $2.to_i(16)
+      addr = bnum * 16384 + badd - rom_base
+      puts "Loading #{t} into bank #{bnum} @ #{badd.to_s(16)}, file addr #{addr.to_s(16)}"
+      fc = File.read(t)
+      fc.each_byte do |b|
+        rom.setbyte(addr, b)
+        addr += 1
+      end
+    else
+      puts "I dont know where to load #{t}"
+    end 
+  end
+  File.write(dest_rom, rom)
+  puts "ROM image done: #{dest_rom}"
+end
+

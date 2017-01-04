@@ -1,0 +1,6 @@
+*.o65
+*.lbl
+*.bin
+*.swp
+copyrom.sh
+

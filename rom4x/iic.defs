@@ -1,0 +1,53 @@
+; hardware
+rombank = $c028
+butn0 = $c061
+butn1 = $c062
+kbd = $c000
+kbdstrb = $c010
+addrl = $bff8
+addrm = $bff9
+addrh = $bffa
+data = $bffb
+
+; screen holes
+; same as //c firmware listing, need to add $c4 for mem card in slot 4
+sl_scrn1 = $478 - $c0
+sl_scrn2 = $4f8 - $c0
+sl_scrn3 = $578 - $c0
+sl_scrn4 = $5f8 - $c0
+sl_scrn5 = $678 - $c0
+sl_scrn6 = $6f8 - $c0
+sl_scrn7 = $778 - $c0
+sl_scrn8 = $7f8 - $c0
+numbanks = sl_scrn1
+pwrup = sl_scrn7
+; next loc is commented in firmware listing, but apple engineers
+; planned on a more sophisticated power-up check that they didn't do
+; we will repurpose this to store selected closed-apple menu item
+power2 = sl_scrn8
+sl_devno = $778
+
+; locations
+softev = $3f2
+pwerdup = $3f4
+
+; values
+pwrbyte = $a5
+rx_slot = $4
+rx_mslot = rx_slot + $c0
+rx_devno = rx_slot * $10 + $88
+
+; entry points
+gorst4x = $c763		; switch to/from reset4x
+gobt4x = gorst4x + 6	; switch to/from boot4x
+gobanner = gobt4x + 6	; banner from bank 1
+rst4xrtn = $facb	; where to return from reset4x
+;bt4xrtn = $fb12	; where to return from boot4x
+bt4xrtn = $fb19		; where to return from boot4x
+reset4x = $e000		; reset routine
+boot4x = $e180		; boot routine
+banner = $fb60		; 'Apple //c'
+testsize = $d99f	; test ramdisk size (rom 3 = $d995)
+monitor = $ff59		; monitor
+swrts2 = $c784		; switch firmware and rts
+
