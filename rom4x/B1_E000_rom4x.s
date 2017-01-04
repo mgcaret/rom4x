@@ -77,11 +77,10 @@ confirm	pha
 	plp
 	rts
 ; msg format
-; high bit set indicates high byte of address
-; this bit is inverted before use.  Next byte must be
-; low byte of address. Anything else are characters to
-; display and will have their upper bit set before
-; being written to the screen.
+; A byte < $20 indicates high byte of address.
+; Next byte must be low byte of address. Anything
+; else are characters to display and will have their
+; upper bit inverted before being written to the screen.
 msg1 = *
 	.db $05,$06,"0 Monitor"
 	.db $05,$86,"1 Reboot"
