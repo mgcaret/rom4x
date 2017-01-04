@@ -22,7 +22,7 @@ This firmware enhancement identifies a ProDOS boot block on the RAM disk and, if
 
 ### Real //c
 
-Assuming you already have it burned onto a chip (I use Atmel 27C256, which hold 32K, and program with a TL866), follow the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf).
+Assuming you already have it burned onto a chip (I use Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, for some reason, you are installing this ROM in an original //c.  Since the original //c does not have a memory card connector, I would not recommend it anyway.
 
 ### Emulator
 
@@ -155,7 +155,7 @@ Jumping into this new hardware for old computers craze, I bought a [Ram Express 
 
 Then I powered down for a while to do non-hobby things, and instead of a super fast boot to ProDOS, I got the the familiar clunking of the Apple 5 1/4 floppy drive recalibrating.  I thought to myself that surely I was doing something wrong, so I rebooted ProDOS and found the card in its initial state without what I had copied on it.
 
-Bummer
+Bummer.
 
 ## Resetting My Expectations
 
