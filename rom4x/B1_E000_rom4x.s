@@ -114,8 +114,7 @@ btc4	cmp #$04		; RX diags
 	bne btc5
 	ldx #$ff
 	txs			; reset stack
-	ldy #rx_mslot		; diag routine needs
-	ldx #rx_devno		; ditto
+	jsr rdinit		; get x and y loaded
 	stx sl_devno		; diags need this
 	jsr testsize		; compute card size
 	lda #>(monitor-1)	; load "return" address
