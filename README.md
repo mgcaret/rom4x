@@ -181,6 +181,10 @@ All cases:  When any menu option is selected, the "ROM 4X MM/DD/YY" message is d
     - Expected:  The system boots from the internal 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
   7. Boot External 5.25
     - Expected:  The system boots from the external 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
+    
+### Ideas for Future
+
+  - Replace Apple Slinky code with RamFactor code.  (Difficulty:  Hard)
 
 # The Whole Story
 
