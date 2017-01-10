@@ -149,13 +149,24 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
 
 #### Basic Functional Tests
 
-  1. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
+  1. Boot ProDOS from power off.  Run SlotScan 1.62 and confirm that the slots are identified as expected:
+    - Port 1: Serial Port (#1)
+    - Port 2: Serial Port (#1)
+    - Port 3: 80-Column Port (#8)
+    - Port 4: RamCard SmartPort: 1 Device Found
+      - Manufacturer #0
+      - Device 1: "RAMCARD", ...
+        - Type: Mem. expansion  ...
+    - Port 5: SmartPort
+    - Port 6: Disk ][ Port
+    - Port 7: Mouse Port (#0)
+  2. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
     - Expected:  The system boots the same as an unmodified ROM 4.
-  2. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
+  3. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
     - Expected:  The system boots from RAM disk, an inverse R may appear on line 24 of the display.
-  3. Power on the system with the ca key pressed or use ctrl-ca-reset.
+  4. Power on the system with the ca key pressed or use ctrl-ca-reset.
     - Expected:  The menu is displayed.
-  4. RAM disk recovery:
+  5. RAM disk recovery:
     1. Battery-backed RAM present with bootable ProDOS RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
       - Expected:  The system boots from RAM disk.
     2. Non-battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
