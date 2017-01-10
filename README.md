@@ -149,17 +149,7 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
 
 #### Basic Functional Tests
 
-  1. Boot ProDOS from power off.  Run SlotScan 1.62 and confirm that the slots are identified as expected:
-    - Port 1: Serial Port (#1)
-    - Port 2: Serial Port (#1)
-    - Port 3: 80-Column Port (#8)
-    - Port 4: RamCard SmartPort: 1 Device Found
-      - Manufacturer #0
-      - Device 1: "RAMCARD", ...
-        - Type: Mem. expansion  ...
-    - Port 5: SmartPort
-    - Port 6: Disk ][ Port
-    - Port 7: Mouse Port (#0)
+  1. Boot ProDOS from power off.  Run SlotScan 1.62 and confirm that the slots are identified as expected, see below.
   2. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
     - Expected:  The system boots the same as an unmodified ROM 4.
   3. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
@@ -171,6 +161,32 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
       - Expected:  The system boots from RAM disk.
     2. Non-battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
       - Expected:  The system boots from RAM disk.
+
+Expected SlotScan output:
+```
+SlotScan  Version 1.62                  Copyright 1989-1994 by Robert S. Claney 
+--------------------------------------------------------------------------------
+Apple Computer Type: //c, ROM Ver 4 (Newer Mem. Exp.)                           
+Processor type: 65c02                                                           
+Total RAM: 128K                                                                 
+                                                                                
+-----Scanning for peripherals-----                                              
+Port 1: Serial Port (#1)                                                        
+Port 2: Serial Port (#1)                                                        
+Port 3: 80-Column Port (#8)                                                     
+Port 4: RamCard SmartPort: 1 device found                                       
+        Manufacturer #0 (Unknown)                                               
+        Device 1: "RAMCARD",  Size: 2048 Blocks (1024K, 1 Meg)                  
+             Type: Mem. expansion    Version: 0.102                             
+             Addl. info:  (None)                                                
+Port 5: SmartPort: 0 devices found                                              
+Port 6: Disk ][ Port                                                            
+        Device Size: 280 Blocks (140K)                                          
+Port 7: Mouse Port (#0)                                                         
+                                                                                
+Done.  Press any key to continue, or Control-P to get a printout             
+```
+
 
 #### Menu Item Functional Tests
 
