@@ -1,0 +1,70 @@
+A potential possibility is to replace Apple Slinky firmware with the RamFactor firmware.
+
+The ROM of the RamFactor is 8K in size, but that is not how much we'd need in the IIc.
+
+The layout of the ROM is two banks of 4K, selected by the low bit of $C08F+slot*$10.
+
+Each bank is laid out as follows, with the base at $C000
+$C000-$C0FF: Copyright message and fill, not visible in-system.
+$C100-$C7FF: Slot firmware, $100 bytes for each slot, same code in both banks
+             This represents the same code assembled for each slot.
+             Only the slot the card is in is visible.
+$C800-$CFFF: 2K of shared firmware space firmware, different for each bank.
+
+So as we see, without any modifications we need approximately 4K+256 bytes of space to
+accomodate the RamFactor code.  It is likely we will need to do some bank switching which
+tends to add code, but also make some optimizations or drop features, which will remove
+code.
+
+There is definitely enough space in the //c firmware for it.  Especially if we can drop
+the original slinky code, which uses $C400-$C4FF, $C752-$C762 (bank switch, both banks),
+and $D800-$DB58 (eff. $DBFF).  $C763-$C7FF is already used by ROM 4X.
+
+Features that might be droppable:  More than 1MB memory support.
+
+Steps needed:
+
+Produce commented RF source that assembles to a binary match for the latest firmware (1.4).
+
+Port to Apple //c:
+  - The main issue is that we don't have the ability to run RF code at $C800.
+  - Bank switch code will need to be in the C400 space, but in the alt bank that
+    has the //c diagnostics, which will either need to be modified or we will have to
+    use less efficient bank switching (RTS trick).  We can optimize the RTS trick in this
+    scenario by having an entry point table all on the same page.  If we waste a few bytes
+    in the alt firmware bank we can do something like:
+entry:	; expect x = function code
+	lda table_hibyte
+	pha
+	txa
+	asl
+	asl ; mult by 4
+	pha ; "return addr" now a multiple of 4 in jump table
+	jmp swrts ; switch bank and go
+  - If the RF code calls any monitor routines we may need to supply them outright
+    or provide for a bank-switched call.
+  - We are likely going to need a "cross-bank JSR".
+    - Caller:  Push callee address-1 on stack and JSR to xb_jsr
+    - xb_jsr:  change banks, stack has: SP->caller callee
+               rework stack so that we have the following return entries
+               SP->callee swrts caller
+               sta $       ; into screen holes
+               stx $
+               tsx         ; SP->caller callee, x->caller callee
+               lda $103,x  ; callee high 
+               pha         ; SP->callee[h] caller callee
+               lda $102,x  ; callee low
+               pha         ; SP->callee caller callee
+               lda $101,x  ; caller high
+               sta $103,x  ; SP->callee caller callee[l]+caller[h]
+               lda $100,x  ; caller low
+               sta $102,x  ; SP->callee caller caller
+               lda #swrts_hi-1
+               sta $101,x
+               lda #swrts_lo-1
+               sta $100,x  ; SP->callee swrts caller
+               lda $       ; from screen holes
+               ldx $
+               rts         ; pops callee, callee rts pops swrts, swrts pops caller
+               ; above code is ~44 bytes
+

@@ -161,15 +161,13 @@ rdrecov	jsr rdinit		; init ramcard
 	stz addrl,x		; set slinky address 0
 	stz addrm,x
 	stz addrh,x
-	lda data,x		; start compare to ProDOS boot block
+	lda data,x		; start check for bootable ramdisk
 	cmp #$01
-	bne recovdn		; not ProDOS
-	lda data,x
-	cmp #$38
-	bne recovdn		; not ProDOS
-	lda data,x
-	cmp #$b0
-	bne recovdn		; not ProDOS
+	bne recovdn		; not bootable
+	lda data,x		; next byte should be nonzero and not $ff
+	beq recovdn		; not bootable
+	cmp #$ff
+	beq recovdn		; not bootable
 	lda #pwrbyte
 	sta pwrup,y		; set power byte
 	lda "R"			; tell user
