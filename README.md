@@ -8,7 +8,7 @@ ROM 4X is an enhancement to the Apple //c version 4 firmware ROM.
 
 It adds the following features to the Apple //c version 4 firmware:
 
-  - Identifies and reinstates a *bootable* (it must have a boot block!) ProDOS-formatted RAM disk from battery-backed expansion memory (see below).
+  - Identifies and reinstates a *bootable* (it must have a boot block!) ProDOS-formatted RAM disk from battery-backed expansion memory (see below), such as the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) from A2Heaven.
   - Provides a menu of various tools upon pressing Ctrl+Closed-Apple+Reset (or holding Closed-Apple when powering up), that let you:
     - Enter the monitor unconditionally.
     - Reboot the machine (enter standard boot sequence).
@@ -149,17 +149,44 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
 
 #### Basic Functional Tests
 
-  1. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
+  1. Boot ProDOS from power off.  Run SlotScan 1.62 and confirm that the slots are identified as expected, see below.
+  2. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
     - Expected:  The system boots the same as an unmodified ROM 4.
-  2. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
+  3. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
     - Expected:  The system boots from RAM disk, an inverse R may appear on line 24 of the display.
-  3. Power on the system with the ca key pressed or use ctrl-ca-reset.
+  4. Power on the system with the ca key pressed or use ctrl-ca-reset.
     - Expected:  The menu is displayed.
-  4. RAM disk recovery:
+  5. RAM disk recovery:
     1. Battery-backed RAM present with bootable ProDOS RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
       - Expected:  The system boots from RAM disk.
-    2. Battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
+    2. Non-battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
       - Expected:  The system boots from RAM disk.
+
+Expected SlotScan output:
+```
+SlotScan  Version 1.62                  Copyright 1989-1994 by Robert S. Claney 
+--------------------------------------------------------------------------------
+Apple Computer Type: //c, ROM Ver 4 (Newer Mem. Exp.)                           
+Processor type: 65c02                                                           
+Total RAM: 128K                                                                 
+                                                                                
+-----Scanning for peripherals-----                                              
+Port 1: Serial Port (#1)                                                        
+Port 2: Serial Port (#1)                                                        
+Port 3: 80-Column Port (#8)                                                     
+Port 4: RamCard SmartPort: 1 device found                                       
+        Manufacturer #0 (Unknown)                                               
+        Device 1: "RAMCARD",  Size: 2048 Blocks (1024K, 1 Meg)                  
+             Type: Mem. expansion    Version: 0.102                             
+             Addl. info:  (None)                                                
+Port 5: SmartPort: 0 devices found                                              
+Port 6: Disk ][ Port                                                            
+        Device Size: 280 Blocks (140K)                                          
+Port 7: Mouse Port (#0)                                                         
+                                                                                
+Done.  Press any key to continue, or Control-P to get a printout             
+```
+
 
 #### Menu Item Functional Tests
 
@@ -181,10 +208,14 @@ All cases:  When any menu option is selected, the "ROM 4X MM/DD/YY" message is d
     - Expected:  The system boots from the internal 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
   7. Boot External 5.25
     - Expected:  The system boots from the external 5.25 drive, skipping the RAM card.  The system may proceed to the SmartPort if no disk is found.
+    
+### Ideas for Future
+
+  - Replace Apple Slinky code with RamFactor code.  (Difficulty:  Hard)
 
 # The Whole Story
 
-The Apple II Plus was the first computer my family owned.  It's what I learned to program on.  We spent hours at the keyboard typing in programs from magazines, and eventually I learned to modify them and write my own.  As technology progressed, I switched to PCs like almost everyone else and largely forgot about the Apple II after the 90s.  But, I held on to most of the stuff I'd acquired for it, much of which became cheap in the years after Apple discontinued the product line.
+The Apple II Plus was the first computer my family owned.  It's what I learned to program on.  We spent hours at the keyboard typing in programs from magazines, and eventually I learned to modify them and write my own.  As technology progressed, I switched to PCs like almost everyone else and largely forgot about the Apple II after the 90s.  I still had an interest in my Apple IIs and managed to get hold of some more gear, including a //c and a couple of IIgs machines.  The prices bottomed out a few years after Apple discontinued the line.  Eventually I moved on and boxed it all up, sold a bit, but I held on to most of the interesting stuff I'd acquired.
 
 ## The Beginning and the New Old
 
@@ -194,7 +225,7 @@ So then I go searching around the net only to discover that not only is there a 
 
 Jumping into this new hardware for old computers craze, I bought a [Ram Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144#review) from [A2 Heaven](http://www.a2heaven.com/) and was excited to try out the whopping (really!) 1 MB of battery-backed memory in it, as well as the clock.  I formatted the card, loaded up ProDOS, and rebooted... Instant-on!  Much fast!
 
-Then I powered down for a while to do non-hobby things, and instead of a super fast boot to ProDOS, I got the the familiar clunking of the Apple 5 1/4 floppy drive recalibrating.  I thought to myself that surely I was doing something wrong, so I rebooted ProDOS and found the card in its initial state without what I had copied on it.
+Then I powered down for a while to do non-hobby things.  Upon return, instead of a super fast boot to ProDOS, I got the the familiar clunking of the Apple 5 1/4 floppy drive recalibrating.  I thought to myself that surely I was doing something wrong, so I rebooted ProDOS and found the card in its initial state without what I had copied on it.
 
 Bummer.
 
