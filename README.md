@@ -31,9 +31,9 @@ Copy the ROM into the appropriate location for your emulator.  At the time of wr
 
 ## Operation
 
-Power on your //c.  Everything should look and work just like it did before. If not, revisit your installation.
+Power on your //c.  Everything should look and work *almost* like it did before.  If there is a bootable device somewhere, the machine will boot it.  If there is not (and this is one of the noticable changes), you will get dropped to BASIC without the need to press ctrl+reset.  If things don't go well, revisit your installation.
 
-Format the card RAM disk with something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on it.  Power off the machine, and power it on after, say, 15 minutes.  You should boot off of the RAM disk.  You might notice an "R" flash on the screen for an instant before ProDOS loads.
+If you don't have an initialized RAM disk, format the card RAM disk with something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on it.  Power off the machine, and power it on after a few minutes.  You should boot off of the RAM disk.  You might notice an "R" flash on the screen for an instant before ProDOS loads.
 
 Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing reset.  You should see the following menu appear:
 
