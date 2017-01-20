@@ -11,6 +11,7 @@ It adds the following features to the Apple //c version 4 firmware:
     - Zero the RAM card, in case it is corrupted.
     - Execute the machine and RAM card diagnostics.
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
+    - The system drops to BASIC if no bootable device is found.
 
 The first feature listed above is the *raison d'etre* for this project.  The larger story is down below but in short:  The Apple //c memory card driver keeps certain information in the "screen holes" in main memory, which are required to use the memory card as a RAM disk.  Should these screen hole values disappear, the card is re-initialized to empty when ProDOS boots.  This happens even when the card is battery-backed and already has a RAM disk.  The card data is not damaged until ProDOS boots, but if you attempt to manually boot the RAM disk it will say "UNABLE TO START FROM MEMORY CARD" because the screen hole values are not initialized.
 
@@ -119,7 +120,7 @@ First and foremost, it is most helpful to have an emulator.  The only one that I
 
 If you plan to test on a real //c, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
 
-As for me, I just use the emulator and then I am very careful with changing the ROM.
+As for me, I just use the emulator and then I am very careful with changing the ROM when I want to test on the real hardware.
 
 ### Apple //c Technical Reference and other Documentation
 
@@ -147,15 +148,18 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
 
   1. Boot ProDOS from power off.  Run SlotScan 1.62 and confirm that the slots are identified as expected, see below.
   2. With no bootable ProDOS RAMdisk, boot the system from power off or ctrl-oa-reset.
-    - Expected:  The system boots the same as an unmodified ROM 4.
+    1. With the drop-to-basic patch:
+      - Expected: The system says "No bootable device" and drops to BASIC.
+    2. Without to drop-to-basic patch:
+      - Expected: The system boots the same as an unmodified ROM 4.
   3. With a bootable ProDOS RAMdisk containing ProDOS, boot the system from power off or ctrl-oa-reset.
-    - Expected:  The system boots from RAM disk, an inverse R may appear on line 24 of the display.
+    - Expected:  The system boots from RAM disk, an inverse or flashing R may appear on the left of line 24 of the display.
   4. Power on the system with the ca key pressed or use ctrl-ca-reset.
     - Expected:  The menu is displayed.
   5. RAM disk recovery:
-    1. Battery-backed RAM present with bootable ProDOS RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
+    1. Battery-backed RAM present with bootable RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
       - Expected:  The system boots from RAM disk.
-    2. Non-battery-backed RAM present with bootable ProDOS RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:A0` then `401<400.BFFEM`) and press ctrl-oa-reset.
+    2. Non-battery-backed RAM present with bootable RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:00` then `401<400.BFFEM`) and press ctrl-oa-reset.
       - Expected:  The system boots from RAM disk.
 
 Expected SlotScan output:
