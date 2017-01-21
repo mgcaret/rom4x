@@ -11,7 +11,7 @@ It adds the following features to the Apple //c version 4 firmware:
     - Zero the RAM card, in case it is corrupted.
     - Execute the machine and RAM card diagnostics.
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
-    - The system drops to BASIC if no bootable device is found.
+  - The system drops to BASIC if no bootable device is found.
 
 The first feature listed above is the *raison d'etre* for this project.  The larger story is down below but in short:  The Apple //c memory card driver keeps certain information in the "screen holes" in main memory, which are required to use the memory card as a RAM disk.  Should these screen hole values disappear, the card is re-initialized to empty when ProDOS boots.  This happens even when the card is battery-backed and already has a RAM disk.  The card data is not damaged until ProDOS boots, but if you attempt to manually boot the RAM disk it will say "UNABLE TO START FROM MEMORY CARD" because the screen hole values are not initialized.
 
@@ -23,7 +23,7 @@ This firmware enhancement identifies a ProDOS boot block on the RAM disk and, if
 
 ### Real //c
 
-Assuming you already have it burned onto a chip (I use Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, for some reason, you are installing this ROM in an original //c.  Since the original //c does not have a memory card connector, I would not recommend it anyway.
+Assuming you already have it burned onto a chip (I use SST27SF512s flash chips which hold 64K and Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, you are installing this ROM in an original //c.  I don't recommend installing it on a non-memory expansion //c unless you have expansion memory that looks like the 'slinky' memory of the later models (such as the new Ram Express under development at A2Heaven).  ROM 4X doesn't know about RAMWorks-style expansions..
 
 ### Emulator
 
@@ -88,7 +88,7 @@ This skips the RAM disk and starts booting with the internal 5.25 drive.
 
 This is like option 6, but using an external 5.25 drive.  The only OS I am aware of that supports booting this way is ProDOS.
 
-This destructively copies a short routine to $300 so if you need to preserve what's there don't use this option.
+This destructively copies a short routine to $800 so if you need to preserve what's there don't use this option.
 
 # Build/Develop Guide
 
@@ -112,6 +112,8 @@ Once you have it all together change to the directory with the source files and 
 
 If all goes well, you will have a shiny new `iic_rom4x.bin`.
 
+If you intend to build an image for a 512-kbit chip such as the SST27SF512, do `rake sf512`.
+
 ## Develop
 
 ### First Thing's First
@@ -120,7 +122,7 @@ First and foremost, it is most helpful to have an emulator.  The only one that I
 
 If you plan to test on a real //c, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
 
-As for me, I just use the emulator and then I am very careful with changing the ROM when I want to test on the real hardware.
+As for me, I just use the emulator and then I am very careful with changing the ROM when I want to test on the real hardware.  For heavy development/testing I insert a low-profile solder-tail ZIF socket into the existing chip socket..
 
 ### Apple //c Technical Reference and other Documentation
 
@@ -128,7 +130,7 @@ You need this.
 
 The Apple //c Technical Reference Manual that is available on the internet has the firmware listing for ROM 3.  ROM 4 fixes a few bugs that were in ROM 3, including with the memory card driver.  The changes are minor and affect some of the offsets of routines in the RAM card support, but it is easy to figure them out.
 
-[This](http://www.1000bit.it/support/manuali/apple/technotes/memx/tn.memx.1.html) tech note is also helpful as it documents the screen holes and some of the card behavior including under what conditions it reformats.  Though the power2 byte is *not* used by the Apple //c code -- it is commented out in the firmware listings.
+[This](http://www.1000bit.it/support/manuali/apple/technotes/memx/tn.memx.1.html) tech note is also helpful as it documents the screen holes and some of the card behavior including under what conditions it reformats.  Though the power2 byte is *not* used by the Apple //c code -- it is commented out in the firmware listings in the Technical Reference.  ROM 4X uses it for the menu function.
 
 [This](http://www.1000bit.it/support/manuali/apple/technotes/aiic/tn.aiic.5.html) technical note is a little less helpful for this project.
 
@@ -159,7 +161,7 @@ One file, `iic.defs` is included by all of the other source files.  This has ent
   5. RAM disk recovery:
     1. Battery-backed RAM present with bootable RAM disk:  Power off the machine and leave it for 1 hr.  Power on.
       - Expected:  The system boots from RAM disk.
-    2. Non-battery-backed RAM present with bootable RAM disk:  Erase main RAM from 0400 up (e.g. in monitor: `400:00` then `401<400.BFFEM`) and press ctrl-oa-reset.
+    2. Non-battery-backed RAM present with bootable RAM disk:  Erase main RAM from 0300 up (e.g. in monitor: `300:00` then `301<300.BFFEM`) and press ctrl-reset.
       - Expected:  The system boots from RAM disk.
 
 Expected SlotScan output:
