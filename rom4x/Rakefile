@@ -47,3 +47,8 @@ task :build_rom => [:assemble] do
   puts "ROM image done: #{dest_rom}"
 end
 
+desc "Build SST27SF512 Image"
+task :sf512 => [:build_rom] do
+  sh "cat #{dest_rom} #{dest_rom} > sf512_#{dest_rom}"
+end
+
