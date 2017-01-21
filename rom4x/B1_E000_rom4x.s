@@ -17,7 +17,7 @@ menu4x	jsr gobanner		; "Apple //c"
 	bne ckkey1
 	ldx #$ff		; reset stack
 	txs
-	lda #>(monitor-1)	; monitor entry ons tack
+	lda #>(monitor-1)	; monitor entry on stack
 	pha
 	lda #<(monitor-1)
 	pha
