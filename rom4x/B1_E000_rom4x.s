@@ -132,16 +132,15 @@ btc6	cmp #$06		; boot int drive
 	beq boot6
 btc7	cmp #$07		; boot ext drive
 	bne boot4		; none of the above
-	; copy small routine to $300 to boot
+	; copy small routine to $800 to boot
 	; external 5.25
 	ldy #(bt4xend-bootext+1)
 btc7lp	lda bootext,y
-	sta $300,y
+	sta $800,y
 	dey
 	bpl btc7lp
-	lda #$03		; copy done
-	ldx #$00
-	bra bootadr
+	lda #$08		; copy done
+	bra bootsl
 boot4	lda #rx_mslot		; boot slot 4
 	bra bootsl
 boot5	lda #$c5		; boot slot 5
@@ -170,7 +169,7 @@ rdrecov	jsr rdinit		; init ramcard
 	beq recovdn		; not bootable
 	lda #pwrbyte
 	sta pwrup,y		; set power byte
-	lda "R"			; tell user
+	lda #"R"		; tell user
 	sta $7d0		; on screen
 recovdn	rts
 ; zero ram card space
@@ -198,8 +197,7 @@ cl256lp phx			; loop for all bytes in page
 	bne cl64klp
 	plx
 	dex
-	beq clrdone
-	bra clbnklp
+	bne clbnklp
 clrdone	ldy #rx_mslot
 	sta pwrup,y		; zero screen holes
 	sta numbanks,y
@@ -211,8 +209,7 @@ rdinit	bit rx_mslot *$100	; activate registers
 	ldx #rx_devno		; register offset
 	rts
 ; next is snippet of code to boot external 5.25
-bootext	sei
-	lda #$e0
+bootext	lda #$e0
 	ldy #$01
 	ldx #$60
 	jmp $c60b
