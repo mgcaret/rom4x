@@ -175,36 +175,33 @@ recovdn	rts
 ; zero ram card space
 rdclear	jsr rdinit		; init ramcard
 	jsr testsize		; get size
+	lda numbanks,y		; # of 64Ks to write
+	beq clrdone		; no memory
 	lda #$c0		; 'A' - 1
 	sta $400		; upper left corner
-	lda #$00		; we are going to write this everywhere
-	sta addrl,x		; slinky address 0
-	sta addrm,x
-	sta addrh,x
-	ldx numbanks,y		; # of 64Ks to write
-	beq clrdone		; no memory
-clbnklp	phx			; wish the 65xx had more registers
-	inc $400		; poor mans progress meter
+	stz addrl,x		; slinky address 0
+	stz addrm,x
+	stz addrh,x
+clbnklp	inc $400		; poor mans progress meter
 	ldy #$00
 cl64klp	ldx #$00		; loop for all pages in bank
-cl256lp phx			; loop for all bytes in page
-	ldx #rx_devno		; more registers, please!
-	sta data,x		; write a zero to card
-	plx
+cl256lp txa			; loop for all bytes in page
+	ldx #rx_devno
+	stz data,x		; write a zero to card
+	tax
 	dex
-	bne cl256lp
+	bne cl256lp		; 256 byte loop
 	dey
-	bne cl64klp
-	plx
-	dex
-	bne clbnklp
-clrdone	ldy #rx_mslot
-	sta pwrup,y		; zero screen holes
-	sta numbanks,y
+	bne cl64klp		; 64K loop
+	ldx #rx_mslot
+	dec numbanks,x
+	bne clbnklp		; if more banks
+clrdone	ldx #rx_mslot
+	stz pwrup,x		; zero powerup byte
 	lda #$a0		; ' '
 	sta $400		; clear progress
 	rts
-rdinit	bit rx_mslot *$100	; activate registers
+rdinit	bit rx_mslot*$100	; activate registers
 	ldy #rx_mslot		; slot offset
 	ldx #rx_devno		; register offset
 	rts
