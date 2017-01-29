@@ -1,0 +1,36 @@
+; hardware
+set80col = $c001
+rombank = $c028
+butn0 = $c061
+butn1 = $c062
+addrl = $bff8
+addrm = $bff9
+addrh = $bffa
+data = $bffb
+
+; screen holes
+; same as //c firmware listing, need to add $c4 for mem card in slot 4
+sl_scrn1 = $478 - $c0
+sl_scrn2 = $4f8 - $c0
+sl_scrn3 = $578 - $c0
+sl_scrn4 = $5f8 - $c0
+sl_scrn5 = $678 - $c0
+sl_scrn6 = $6f8 - $c0
+sl_scrn7 = $778 - $c0
+sl_scrn8 = $7f8 - $c0
+numbanks = sl_scrn1
+pwrup = sl_scrn7
+sl_devno = $778
+
+; values
+pwrbyte = $a5
+rx_slot = $4
+rx_mslot = rx_slot + $c0
+rx_devno = rx_slot * $10 + $88
+
+; entry points
+r5xrtn = $fce1
+rom5x = $cf00
+testsize = $d99f
+swrts2 = $c784
+
