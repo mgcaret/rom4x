@@ -1,6 +1,6 @@
 # ROM 4X by MG
 
-ROM 4X is an enhancement to the Apple //c version 4 firmware ROM.
+ROM 4X is an enhancement to the Apple //c version 4 firmware ROM. **Coming soon: ROM 5X** for the IIc Plus (version 5).
 
 It adds the following features to the Apple //c version 4 firmware:
 
