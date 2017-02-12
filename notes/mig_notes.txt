@@ -1,0 +1,25 @@
+MIG space references in ROM:
+CE00-CE1F - MIG RAM window
+CE20 - Increment page
+CE3D-CE3E - ?
+CE40 - write in E4D9,E503,E612,EF02
+       read in 8E9C,E9A3,E9EB,EA15,EA2D,EA40,EE87,
+       always around slot 6 I/O accesses.
+CE60 - read in routine at E4C7,E8C5,E974,EA6B,EE95
+       write in routine at E4F2,E612,E652,EF02,EFC6,F54C
+       always around slot 6 I/O accesses.
+CEA0 - Reset page 0
+CECD - ? from data
+CED5 - ? from data
+CF9A - ? from bank switch @C746 prob calling main bannk
+CFCF - ? from data
+CFFF - leftover from non //c ROM
+
+MIG page usage:
+Page 0 - 3.5 ROM - routines at CA12, E51D
+CE11 - slot I/O offset of ? (ldy CE11, lda C000,y in routine at CA12)
+Page 1 - used by routines at CA71,E54F,E534
+Page 2 - Appears used only by accelerator code
+Page 3 - used by routines at CA4B, CA71, E1E1, EB8B, ECCF
+Page 4+ - used all over the place
+

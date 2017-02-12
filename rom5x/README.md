@@ -1,18 +1,26 @@
 # ROM 5X by MG
 
-## DO NOT EVEN TRY THIS YET :-)
+## PRELIMINARY, DO NOT EVEN TRY THIS YET :-)
 
 **Warning:** This has not been tested on an emulator or a real Apple IIc Plus.
 
-This is a patch for the Apple IIc Plus firmware that tries to recover a battery-backed
-RAM disk upon cold start.  Because of the limited space in the Apple IIc ROM. it does not
-have the complete feature set of ROM 4X for the (non-Plus) //c.
+This is ROM4X revised to the Apple IIc Plus ROM version 5.
 
-Upon cold start, the patch checks for a potentially bootable RAM disk and restores the
-appropriate screen holes to prevent it from being destroyed and to enable boot.  If a
-RAMdisk is recovered, a flashing "R" will appear in the lower left corner of the screen.
+There are almost no free bytes in the main bank of the IIc Plus firmware, so
+I had to get creative to get into the alternate bank, where I then had to split
+the code up across multiple smaller free spaces.  Ironically this makes the
+code larger as well.
 
-To prevent the check and recovery, power on the machine with the Option key held down.
-A flashing "O" will appear in the lower left corner of the screen and the system will
-boot without checking for or recovering any RAM disk.
+For those interested, I hijack the monitor BEEP1 routine.  The beep routine has
+an LDA #$40 and then calls WAIT with this value for a .1 second delay,
+presumably so that multiple beeps are distinct from each other.
+
+I patch the JSR WAIT to be STA $C028, which switches to the other bank.
+The code in the other bank checks the accumulator and for two values calls
+either reset5x or boot5x, and for any other value executes the WAIT (assuming
+that we got there from BEEP1).
+
+Then, in only 6 bytes I can create two entry points that load the value into
+A that we need for the reset or boot routines, and then jump to the above patch.
+
 

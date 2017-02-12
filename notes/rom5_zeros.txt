@@ -1,0 +1,27 @@
+Inventory of zeros of 5 bytes or more in the IIc Plus ROM
+
+Main Bank
+C1FB - 5 bytes
+C4EE - 12 bytes
+C5F3 - 5 bytes
+C6FB - 5 bytes
+C9A1 - 9 bytes
+CFF9 - 7 bytes
+Alt Bank
+C572 - 8 bytes
+C7FB - 8 bytes
+C7FC - 7 bytes
+CE00 - 512 bytes not usable (MIG space)
+D134 - 76 bytes
+D516 - 234 bytes
+D6CE - 306 bytes
+DB63 - 157 bytes
+DE00 - 512 bytes maybe not usable (second mig space?), none of the firmware
+       touches it.
+F72D - 16 bytes not usable (some kind of data table)
+F7ED - 19 bytes
+FB3C - 196 bytes
+FC3C - 12 bytes
+FCC9 - 55 bytes
+FE96 - 352 bytes, but reserve 65816 vectors
+
