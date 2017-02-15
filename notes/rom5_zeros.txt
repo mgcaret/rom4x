@@ -16,8 +16,7 @@ D134 - 76 bytes
 D516 - 234 bytes
 D6CE - 306 bytes
 DB63 - 157 bytes
-DE00 - 512 bytes maybe not usable (second mig space?), none of the firmware
-       touches it.
+DE00 - 512 bytes not usable (second view of MIG)
 F72D - 16 bytes not usable (some kind of data table)
 F7ED - 19 bytes
 FB3C - 196 bytes
