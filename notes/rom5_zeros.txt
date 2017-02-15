@@ -6,21 +6,24 @@ C4EE - 12 bytes
 C5F3 - 5 bytes
 C6FB - 5 bytes
 C9A1 - 9 bytes
-CFF9 - 7 bytes
-Alt Bank
+CFF9 - 7 bytes - ROM 5X switcher
+
+Aux Bank
 C572 - 8 bytes
 C7FB - 8 bytes
 C7FC - 7 bytes
 CE00 - 512 bytes not usable (MIG space)
 D134 - 76 bytes
-D516 - 234 bytes
-D6CE - 306 bytes
-DB63 - 157 bytes
+D516 - 234 bytes - ROM 5X boot
+D6CE - 306 bytes - ROM 5X misc routines
+DB63 - 157 bytes - ROM 5X reset
 DE00 - 512 bytes not usable (second view of MIG)
 F72D - 16 bytes not usable (some kind of data table)
 F7ED - 19 bytes
-FB3C - 196 bytes
+FB3C - 196 bytes - FBE2 ROM 5X dispatch
+                 - Future: classic beep
 FC3C - 12 bytes
 FCC9 - 55 bytes
-FE96 - 352 bytes, but reserve 65816 vectors
+FE96 - 352 bytes - but reserve 65816 vectors
+                 - Future ROM 5X accelerator enhancements
 
