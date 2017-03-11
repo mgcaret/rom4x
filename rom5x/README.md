@@ -22,4 +22,15 @@ that we got there from BEEP1) and returns back to BEEP1.
 Then, in only 6 bytes I can create two entry points that load the value into
 A that we need for the reset or boot routines, and then jump to the above patch.
 
+## Options
+
+The options directory contains one or more subdirectories with optional patches
+that change the default behavior of the Apple IIc Plus.
+
+### Accelerator Reverse
+
+The accelerator reverse patch is a 1-byte patch that causes the IIc Plus to boot up
+at the normal speed.
+
+Pressing <ESC> at reset time will make the machine run at 4 MHz.
 
