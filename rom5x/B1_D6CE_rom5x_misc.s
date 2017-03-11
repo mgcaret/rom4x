@@ -1,11 +1,11 @@
 #include "iic+.defs"
 .text
 * = misc5x ; max 306 bytes
-	bra domenu
-	bra dobann
-	bra gtkey
-	bra confirm
-	bra ntitle
+	bra domenu		; Display menu
+	bra dobann		; Display banner (title + By MG)
+	bra gtkey		; get a key
+	bra confirm		; ask SURE?
+	bra ntitle		; display "Apple IIc +"
 dobann	jsr ntitle
 	ldx #(msg2-msg1)	; msg display entry point
 	jmp disp
@@ -50,10 +50,11 @@ confirm	pha
 	plp
 	rts
 ; display "Apple IIc +" in a convoluted manner
-; ultimately, the rts instruction here "rts" to swrts2
-; which switches banks and "rts" to the title/banner firmware call
-; which then "rts" to swrts (same addr as swrts2, but main bank)
-; which then actually rts to our caller
+; we push the address of swrts/swrts2 onto the stack
+; and then the address of the title routine
+; we then jump to swrts2 which switches banks and RTS to
+; display "Apple IIc +", which then RTS to swrts, which
+; switches banks back to here and RTS to our caller.
 ntitle	lda #>(swrts2-1)	; put return addr of swrts/swrts2 on stack
 	pha
 	lda #<(swrts2-1)
@@ -62,11 +63,6 @@ ntitle	lda #>(swrts2-1)	; put return addr of swrts/swrts2 on stack
 	pha
 	lda #<(banner-1)
 	pha
-	;lda #>(swrts2-1)	; put swrts on the stack
-	;pha
-	;lda #<(swrts2-1)
-	;pha
-	;rts			; jump to swrts2
 	jmp swrts2		; jump to swrts2
 ; msg format
 ; A byte < $20 indicates high byte of address.

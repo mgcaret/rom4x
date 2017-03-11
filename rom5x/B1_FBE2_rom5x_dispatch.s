@@ -8,10 +8,10 @@ chk2:	cmp #$ea		; boot patch
 	bne dowait
 	jmp boot5x
 dowait:	jsr $fcb5		; do delay if anything else
-	lda #>($fbe2-1)
-	pha
-	lda #<($fbe2-1)
+	lda #>($fbe2-1)		; return to other bank here
+	pha			; by pushing address onto
+	lda #<($fbe2-1)		; the stack
 	pha
 	lda #$00		; in case someone assumes this
-	jmp swrts2
+	jmp swrts2		; back to other bank
 	; 28 bytes, will have to move if we get bigger

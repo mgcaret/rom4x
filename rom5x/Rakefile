@@ -12,6 +12,7 @@ end
 desc "Clean object files"
 task :clean do
   sh "rm -f #{dest_rom}"
+  sh "rm -f sf512_#{dest_rom}"
   sh "rm -f *.o65"
   sh "rm -f *.o65.lbl"
 end
