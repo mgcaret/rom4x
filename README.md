@@ -1,8 +1,8 @@
-# ROM 4X by MG
+# ROM 4X and 5X by MG
 
-ROM 4X is an enhancement to the Apple //c version 4 firmware ROM. **Coming soon: ROM 5X** for the IIc Plus (version 5).
+ROM 4X and 5X are enhancements to the Apple //c version 4 and Apple IIc Pluys firmware ROMs.
 
-It adds the following features to the Apple //c version 4 firmware:
+It adds the following features to the Apple //c and IIc Plus firmware:
 
   - Identifies and reinstates a *bootable* (it must have something that looks like a boot block!) RAM disk from battery-backed expansion memory (see below), such as the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) from A2Heaven.
   - Provides a menu of various tools upon pressing Ctrl+Closed-Apple+Reset (or holding Closed-Apple when powering up), that let you:
@@ -11,7 +11,8 @@ It adds the following features to the Apple //c version 4 firmware:
     - Zero the RAM card, in case it is corrupted.
     - Execute the machine and RAM card diagnostics.
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
-  - The system drops to BASIC if no bootable device is found.
+  - IIc: The system drops to BASIC if no bootable device is found (this is the default behavior in the IIc Plus).
+  - IIc Plus: Optionally default the system to 1 MHz.
 
 The first feature listed above is the *raison d'etre* for this project.  The larger story is down below but in short:  The Apple //c memory card driver keeps certain information in the "screen holes" in main memory, which are required to use the memory card as a RAM disk.  Should these screen hole values disappear, the card is re-initialized to empty when ProDOS boots.  This happens even when the card is battery-backed and already has a RAM disk.  The card data is not damaged until ProDOS boots, but if you attempt to manually boot the RAM disk it will say "UNABLE TO START FROM MEMORY CARD" because the screen hole values are not initialized.
 
@@ -21,21 +22,29 @@ This firmware enhancement identifies a ProDOS boot block on the RAM disk and, if
 
 ## Installation
 
-### Real //c
+### Real System
 
-Assuming you already have it burned onto a chip (I use SST27SF512s flash chips which hold 64K and Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, you are installing this ROM in an original //c.  I don't recommend installing it on a non-memory expansion //c unless you have expansion memory that looks like the 'slinky' memory of the later models (such as the new Ram Express under development at A2Heaven).  ROM 4X doesn't know about RAMWorks-style expansions..
+Assuming you already have it burned onto a chip (I use SST27SF512s flash chips which hold 64K and Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, you are installing this ROM in an original //c.  I don't recommend installing it on a non-memory expansion //c unless you have expansion memory that looks like the 'slinky' memory of the later models.  ROM 4X/5X doesn't know about RAMWorks-style expansions.
+
+Cards known to work with ROM 4X include the Apple Memory Expansion Card (but no battery!), and the A2Heaven [RAM Express II](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=146) for the original //c, and the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
 
 ### Emulator
 
+#### //c
+
 Copy the ROM into the appropriate location for your emulator.  At the time of writing the only emulator I am aware of that can emulate the //c with memory expansion is [Catakig](http://catakig.sourceforge.net/) for MacOS.  It's a bit older of an emulator but it runs fine on newer MacOSes.
+
+#### IIc Plus
+
+Unfortunatly the current IIc Plus emulators out there are incomplete.
 
 ## Operation
 
-Power on your //c.  Everything should look and work *almost* like it did before.  If there is a bootable device somewhere, the machine will boot it.  If there is not (and this is one of the noticable changes), you will get dropped to BASIC without the need to press ctrl+reset.  If things don't go well, revisit your installation.
+Power on your machine.  Everything should look and work *almost* like it did before.  If there is a bootable device somewhere, the machine will boot it.  If there is not (and this is one of the noticable changes), you will get dropped to BASIC without the need to press ctrl+reset.  If things don't go well, revisit your installation.
 
 If you don't have an initialized RAM disk, format the card RAM disk with something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on it.  Power off the machine, and power it on after a few minutes.  You should boot off of the RAM disk.  You might notice an "R" flash on the screen for an instant before ProDOS loads.
 
-Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing reset.  You should see the following menu appear:
+Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing reset.  You should see the following menu appear (on a //c, IIc Plus menu is more compact to save firmware space):
 
 ```
 0 Monitor
@@ -84,25 +93,37 @@ This attempts to boot the first smartport device, such as a UniDisk 3.5.
 
 This skips the RAM disk and starts booting with the internal 5.25 drive.
 
+**IIc Plus**: There is no interal 5.25 drive, so this option boots an external 5.25 drive and the option to boot an external 5.25 drive is removed.
+
 ### 7 Boot External 5.25
 
 This is like option 6, but using an external 5.25 drive.  The only OS I am aware of that supports booting this way is ProDOS.
 
 This destructively copies a short routine to $800 so if you need to preserve what's there don't use this option.
 
+*This option is not available on the IIc Plus per the above comment.*
+
 # Build/Develop Guide
 
 ## Build
 
-To build the new firmware, you must start with a copy of the repository containing this file, and obtain a copy of the Apple //c version 4 ROM.  The patches to the firmware work with the ROM dump that has sha256sum:
+To build the new firmware, you must start with a copy of the repository containing this file, and obtain a copy of the Apple //c version 4 or IIc Plus version 5 ROM.  The patches to the firmware work with the ROM dump that has sha256sums:
+
+//c:
 
 ```
 8ad5e6c4ed15d09b62183965b6c04762610d4b26510afc1896bdb4ecc55da883
 ```
+IIc Plus:
 
-It may work with other ROM 4 dumps, it will *not* work with any other ROM version, including ROM 3 and ROM 5 (from the IIc Plus).
+```
+5a62070f6a0b07784681d4df4bf2ce88b2809bec0cbaa65fcb963e804ed60374
+```
 
-Place the ROM dump in the directory with the other files and name it `iic_rom4.bin`.
+
+It may work with other ROM dumps, it will *not* work with any other ROM version, including ROM 3 and earlier.
+
+Place the ROM dump in the directory with the other files and name it `iic_rom4.bin` for ROM 4X and `iic+_rom5.bin` for ROM 5X.
 
 Now you will need a 65C02 cross assembler.  The code was developed using [xa](http://www.floodgap.com/retrotech/xa/), mainly because it was available as a prebuilt binary in my preferred Linux distro's package repositories and supported the 65C02 opcodes.
 
@@ -110,7 +131,7 @@ Finally you will need [Ruby](https://www.ruby-lang.org/en/) and [Rake](https://g
 
 Once you have it all together change to the directory with the source files and original ROM image and type `rake`.
 
-If all goes well, you will have a shiny new `iic_rom4x.bin`.
+If all goes well, you will have a shiny new `iic_rom4x.bin` or `iic+_rom5x.bin`.
 
 If you intend to build an image for a 512-kbit chip such as the SST27SF512, do `rake sf512`.
 
@@ -120,7 +141,7 @@ If you intend to build an image for a 512-kbit chip such as the SST27SF512, do `
 
 First and foremost, it is most helpful to have an emulator.  The only one that I have found that can be used for (almost) thorough testing is [Catakig](http://catakig.sourceforge.net/) for MacOS.  It can emulate the //c and the Expansion Card (though not battery-backed).
 
-If you plan to test on a real //c, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
+If you plan to test on a real machine, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
 
 As for me, I just use the emulator and then I am very careful with changing the ROM when I want to test on the real hardware.  For heavy development/testing I insert a low-profile solder-tail ZIF socket into the existing chip socket..
 
