@@ -2,7 +2,7 @@
 .text
 * = boot5x ; 234 bytes available, code assembles to 231 when 
 	   ; next line uncommented
-;	jsr ntitle		; TODO "Apple IIc +"
+	jsr titl5x		; TODO "Apple IIc +"
 	jsr rdrecov		; try to recover ramdisk
 	lda power2 + rx_mslot	; get action saved by reset5x
 	beq boot4		; if zero, continue boot

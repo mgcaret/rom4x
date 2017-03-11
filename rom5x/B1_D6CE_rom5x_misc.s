@@ -5,6 +5,7 @@
 	bra dobann
 	bra gtkey
 	bra confirm
+	bra ntitle
 dobann	jsr ntitle
 	ldx #(msg2-msg1)	; msg display entry point
 	jmp disp
@@ -21,10 +22,7 @@ kbdin	lda kbd			; get key
 	sta ($0),y		; put it on screen
 	rts
 ; display message, input x = message start relative to msg1
-disp	stz $0			; load some safe defaults
-	lda #$40
-	sta $1
-	ldy #$0			; needs to be zero
+disp	ldy #$0			; needs to be zero
 disp0	lda msg1,x		; get message byte
 	bne disp1		; proceed if nonzero
 	rts			; exit if 0
@@ -56,19 +54,20 @@ confirm	pha
 ; which switches banks and "rts" to the title/banner firmware call
 ; which then "rts" to swrts (same addr as swrts2, but main bank)
 ; which then actually rts to our caller
-ntitle	lda #>(swrts2-1)	; put return addr of swrts2 on stack
+ntitle	lda #>(swrts2-1)	; put return addr of swrts/swrts2 on stack
 	pha
 	lda #<(swrts2-1)
 	pha
-	lda #>(banner-1)
+	lda #>(banner-1)	; put addr of the Title routine on the stack
 	pha
 	lda #<(banner-1)
 	pha
-	lda #>(swrts2-1)
-	pha
-	lda #<(swrts2-1)
-	pha
-	rts			; jump to swrts2
+	;lda #>(swrts2-1)	; put swrts on the stack
+	;pha
+	;lda #<(swrts2-1)
+	;pha
+	;rts			; jump to swrts2
+	jmp swrts2		; jump to swrts2
 ; msg format
 ; A byte < $20 indicates high byte of address.
 ; Next byte must be low byte of address. Anything
@@ -84,7 +83,7 @@ msg1 = *
 	.db $04,$2e,"6 Boot 5.25"
 ;	.db $04,$ae,"7 Accelerator"
 	.db $07,$5f,"By M.G."
-msg2	.db $07,$db,"ROM 5X 02/08/17"
+msg2	.db $07,$db,"ROM 5X 02/10/17"
 	.db $05,$ae,$00		; cursor pos in menu
 msg3	.db $05,$b0,"SURE? ",$00
 

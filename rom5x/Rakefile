@@ -33,12 +33,16 @@ task :build_rom => [:assemble] do
       bnum = $1.to_i(16)
       badd = $2.to_i(16)
       addr = bnum * 16384 + badd - rom_base
-      puts "Loading #{t} into bank #{bnum} @ #{badd.to_s(16)}, file addr #{addr.to_s(16)}"
       fc = File.read(t)
+      fl = fc.bytes.count
+      puts "Loading #{t} into bank #{bnum} @ $#{badd.to_s(16)}, file addr $#{addr.to_s(16)}, len $#{fl.to_s(16)} (#{fl})"
+      nzc = 0
       fc.each_byte do |b|
+        nzc += 1 if rom.getbyte(addr) != 0
         rom.setbyte(addr, b)
         addr += 1
       end
+      puts "\tNote: patched over #{nzc} nonzero bytes!" if nzc > 0
     else
       puts "I dont know where to load #{t}"
     end 

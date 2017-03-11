@@ -50,21 +50,6 @@ menu5x = misc5x
 bann5x = menu5x+2
 gkey5x = bann5x+2
 conf5x = gkey5x+2
+titl5x = conf5x+2
 banner = $fb60
-
-; macros
-#define psa(addr) \
-	lda #>(addr-1) \
-	pha \
-	lda #<(addr-1) \
-	pha \
-	jsr swrts2
-
-#define rtj(addr) \
-	psa(addr) \
-	rts
-
-#define rtl(addr) \
-	psa(addr) \
-	jmp swrts2
 

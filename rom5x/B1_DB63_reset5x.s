@@ -6,11 +6,11 @@
 	pha
 	lda #<(rst5xrtn-1)
 	pha			; note that this stays on stack
-	asl butn1		; closed apple
+	asl butn1		; option (closed apple)
 	bcs ckdiag
 exitrst jmp swrts2
-; check to see if both apples are down
-ckdiag	bit butn0		; open apple
+; check to see if cmd_option (both apples) are down
+ckdiag	bit butn0		; command (open apple)
 	bmi exitrst		; return to RESET.X
 ; present menu because only closed apple is down
 menu	jsr menu5x		; display menu
@@ -33,7 +33,7 @@ doconf	jsr conf5x
 ckkey2	sec
 	sbc #$b0		; ascii->number
 	bmi menu		; < 0 not valid
-	cmp #$08		; we will use 7 for accelerator later
+	cmp #$07		; we will use 7 for accelerator later
 	bpl menu		; > 7 not valid
 	sta power2 + rx_mslot	; for boot5x
 	stz softev + 1		; deinit coldstart
