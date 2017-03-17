@@ -3,7 +3,7 @@
 ## PRELIMINARY, NOT EXTENSIVELY TESTED
 
 *I have not tested this with the A2Heaven RAM card yet, but all of the other
-functionality definitely works.
+functionality definitely works.*
 
 This is ROM 5X, providing the ROM 4X functionality to the Apple IIc Plus ROM
 version 5.
