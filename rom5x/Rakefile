@@ -39,7 +39,7 @@ task :build_rom => [:assemble] do
       puts "Loading #{t} into bank #{bnum} @ $#{badd.to_s(16)}, file addr $#{addr.to_s(16)}, len $#{fl.to_s(16)} (#{fl})"
       nzc = 0
       fc.each_byte do |b|
-        nzc += 1 if rom.getbyte(addr) != 0
+        nzc += 1 if rom.getbyte(addr) != 0 && rom.getbyte(addr) != b
         rom.setbyte(addr, b)
         addr += 1
       end
