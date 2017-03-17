@@ -2,6 +2,9 @@
 
 ## PRELIMINARY, NOT EXTENSIVELY TESTED
 
+*I have not tested this with the A2Heaven RAM card yet, but all of the other
+functionality definitely works.
+
 This is ROM 5X, providing the ROM 4X functionality to the Apple IIc Plus ROM
 version 5.
 
@@ -16,11 +19,13 @@ presumably so that multiple beeps are distinct from each other.
 
 I patch the JSR WAIT to be STA $C028, which switches to the other bank.
 The code in the other bank checks the accumulator and for two values calls
-either reset5x or boot5x, and for any other value executes the WAIT (assuming
-that we got there from BEEP1) and returns back to BEEP1.
+either reset5x or boot5x, for a third value ($40 loaded by BEEP1) does the
+classic Apple II "air raid" beep sound, and for any other value executes the WAIT
+(assuming that we got there from BEEP1) and returns back to BEEP1.
 
-Then, in only 6 bytes I can create two entry points that load the value into
-A that we need for the reset or boot routines, and then jump to the above patch.
+Then, in only 6 bytes I can create two entry points that load the right values
+into the A register that we need for the reset or boot routines, and then jump
+to the above patch.
 
 ## Options
 
