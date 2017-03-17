@@ -27,3 +27,13 @@ FCC9 - 55 bytes
 FE96 - 352 bytes - but reserve 65816 vectors
                  - Future ROM 5X accelerator enhancements
 
+Other potential usable space:
+Aux Bank
+D249-D32B - 227 bytes
+This is the ROM checksum diagnostic, and we currently patch around it
+because it fails with the ROM 5X patches in place, for obvious reasons.
+We could fix the checksum, or reclaim the space.
+To patch around it in a reclaimable fashion, a the JSR instruction at
+C53D and the following carry check and JSR must be patched out, easiest
+by placing BRA C555 at C53D.
+
