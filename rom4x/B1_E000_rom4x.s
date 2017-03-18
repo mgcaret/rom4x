@@ -47,7 +47,7 @@ kbdin	lda kbd			; get key
 	rts
 ; display message, input x = message start relative to msg1
 disp	stz $0			; load some safe defaults
-	lda #$40
+	lda #$04
 	sta $1
 	ldy #$0			; needs to be zero
 disp0	lda msg1,x		; get message byte
