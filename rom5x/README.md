@@ -1,9 +1,10 @@
 # ROM 5X by MG
 
-## PRELIMINARY, NOT EXTENSIVELY TESTED
+## PRELIMINARY, NEEDS MORE TESTING
 
-*I have not tested this with the A2Heaven RAM card yet, but all of the other
-functionality definitely works.*
+*ll of the functionality, including the RAM Disk recovery and other functions,
+appear to work correctly, but I would appreciate any feedback if something isn't
+workign for you.*
 
 This is ROM 5X, providing the ROM 4X functionality to the Apple IIc Plus ROM
 version 5.
