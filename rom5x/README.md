@@ -33,6 +33,9 @@ to the above patch.
 The options directory contains one or more subdirectories with optional patches
 that change the default behavior of the Apple IIc Plus.
 
+Enable options by copying the files to the main directory.  Disable the by removing
+the copied files.
+
 ### Accelerator Reverse
 
 The accelerator reverse patch is a 1-byte patch that causes the IIc Plus to boot up
