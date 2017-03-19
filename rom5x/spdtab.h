@@ -1,4 +1,8 @@
 ; speed table for 4 MHz IIc Plus
+; this was confirmed by measuring a delay loop
+; for each speed.  The delay loop was timed
+; timed to 1/100 sec accuracy using the Ram
+; Express II+ dclock.
         .byte %00000000,$00 ; 4.0000
         .byte %00100011,$33 ; 3.3333
         .byte %00010011,$20 ; 3.2000
