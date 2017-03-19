@@ -15,7 +15,8 @@ chk3:	cmp #$40		; beep
 	bne dowait
 ; "classic air raid beep"
 ; inspired by http://quinndunki.com/blondihacks/?p=2471
-	jsr $fcb5		; (new) WAIT for .1 sec delay
+	; jsr $fcb5		; (new) WAIT for .1 sec delay
+	jsr owait
 	ldy #$c0
 obell2:	lda #$0c
 	jsr owait		; old wait for correct sound

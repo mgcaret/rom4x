@@ -19,6 +19,7 @@ TESTBLD = 0                   ; set to 1 to enable test code that runs in random
                               ; MIG RAM.
 XTRACMD = 0                   ; set to 1 to enable extra accelerator speed commands
 ACCMENU = 1                   ; set to 1 to enable accelerator menu
+ADEBUG  = 0                   ; turn on debugging (copies registers to $300 whenever they are set)
 
         .psc02
 .if TESTBLD
@@ -91,7 +92,9 @@ SWRTS2  = $C784
         .org $FD00
 .endif
 .proc   ACCEL
-        php
+        bra   accel1
+        jmp   AMENU
+accel1: php
         sei
         phy
         phx
@@ -340,15 +343,19 @@ exinit: rts
 ;        plp
         rts
 .endproc ; ASETR1
+; set accelerator registers from saved values in MIG
 .proc   ASETR1
         ldy   ACWH
-        jsr   ACOND
+        jsr   ACOND           ; conditionally enable accelerator
         tya
-        and   #$08
-        beq   setdn
-        ldx   #$03
+        and   #$08            ; is it disabled?
+        bne   setdn           ; if so, don't change other registers
+        ldx   #$03            ; otherwise set all registers from MIG
 @loop:  lda   ZIP5CSV,x
         sta   ZIP5C,x
+.if ::ADEBUG
+        sta   $300,x          ; DEBUG
+.endif
         dex
         bpl   @loop
 setdn:  rts
@@ -397,10 +404,11 @@ IREGV:  .byte %01100111     ; Initial $C05C - slots & speaker: b7-b1 = slot spee
 ; Speed: 4.00         Pdl Dly: On
 ;
 .proc   AMENU
-        ; do this in case someone else calls us
+        ; do this in case someone else calls us outside of AINIT
         bit   MIGPAG0
         bit   MIGPAGI
         bit   MIGPAGI
+        ; save ZP locs we are using
         lda   COUNTER
         pha
         lda   UBFPTRH
@@ -441,7 +449,9 @@ dspd:   lda   ZIP5DSV       ; Speed in 5D register
         ; fall through will say 0.00 MHz
 dspd1:  tya
         stx   COUNTER       ; which speed option is selected
+.if ::TESTBLD
         stx   $0e1f         ; DEBUG
+.endif
         and   #$03          ; MHz value
         ora   #$b0          ; to digit
         sta   $072b         ; ones
@@ -512,12 +522,16 @@ ckP:    cmp   #$d0          ; 'P'
         eor   #$40
         sta   ACWH
 tomenu: jmp   amenu1
+; restore saved values and set accelerator
 exit:   pla
         sta   UBFPTRL
         pla
         sta   UBFPTRH
         pla
         sta   COUNTER
+        jsr   AUNLK
+        jsr   ASETR1
+        jsr   ALOCK
         jmp   dclear
 disp:   jsr   dclear
         inx

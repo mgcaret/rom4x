@@ -78,7 +78,7 @@ msg1 = *
 	.byte $07,$06,"4 RAM Card Diags"
 	.byte $07,$86,"5 Boot 3.5/SmartPort"
 	.byte $04,$2e,"6 Boot 5.25"
-;	.byte $04,$ae,"7 Accelerator"
+	.byte $04,$ae,"7 Accelerator"
 	.byte $07,$5f,"By M.G."
 msg2:	.byte $07,$db,"ROM 5X 02/10/17"
 	.byte $05,$ae,$00		; cursor pos in menu

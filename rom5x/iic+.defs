@@ -1,5 +1,5 @@
 ; options
-newbeep = 1		; 1 = use IIc+ beep
+newbeep = 0		; 1 = use IIc+ beep
 
 ; hardware
 ;set80col = $c001

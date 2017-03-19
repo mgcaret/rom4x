@@ -31,7 +31,11 @@ ckkey1:	cmp #$b2		; "2"
 	bne ckkey2
 doconf:	jsr conf5x
 	bne menu		; go back to menu4x
-ckkey2:	sec
+ckkey2:	cmp #$b7		; "7"
+	bne ckkey3
+	jsr $fd02		; accelerator menu
+	bra menu
+ckkey3:	sec
 	sbc #$b0		; ascii->number
 	bmi menu		; < 0 not valid
 	cmp #$07		; we will use 7 for accelerator later
