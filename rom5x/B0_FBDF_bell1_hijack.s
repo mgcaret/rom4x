@@ -15,7 +15,7 @@
 ; Obviously, $40 should beep the speaker, anything
 ; else can do whatever we want.
 
-.text
-* = $fbdf
+.code
+	.org $fbdf
 	sta $c028
 

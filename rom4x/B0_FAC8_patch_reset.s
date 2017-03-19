@@ -1,7 +1,6 @@
 ; patch RESET.X to call reset4x
-
-#include "iic.defs"
-.text
-* = $fac8
+.code
+.include "iic.defs"
+	.org $fac8
 	jmp gorst4x
 

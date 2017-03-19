@@ -125,7 +125,7 @@ It may work with other ROM dumps, it will *not* work with any other ROM version,
 
 Place the ROM dump in the directory with the other files and name it `iic_rom4.bin` for ROM 4X and `iic+_rom5.bin` for ROM 5X.
 
-Now you will need a 65C02 cross assembler.  The code was developed using [xa](http://www.floodgap.com/retrotech/xa/), mainly because it was available as a prebuilt binary in my preferred Linux distro's package repositories and supported the 65C02 opcodes.
+Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  (Note: The code was developed originally using [xa](http://www.floodgap.com/retrotech/xa/)).
 
 Finally you will need [Ruby](https://www.ruby-lang.org/en/) and [Rake](https://github.com/ruby/rake).
 

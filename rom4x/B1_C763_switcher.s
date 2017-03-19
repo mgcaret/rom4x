@@ -1,6 +1,6 @@
-#include "iic.defs"
-.text
-* = gorst4x
+.code
+.include "iic.defs"
+	.org gorst4x
 	sta rombank	; gorst4x
 	jmp reset4x	; in other bank jmp rstxrtn
 	sta rombank	; gobt4x

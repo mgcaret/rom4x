@@ -1,14 +1,14 @@
-#include "iic.defs"
-
-.text
-* = $c552
+.psc02
+.code
+.include "iic.defs"
+	.org $c552
 	jsr setnorm
 	jsr init
 	bra cbtfail
-	.dsb coma-*,$ea
+	.res coma-*,$ea
 	bra coma		; Make sure coma routine exists
-	.db 0			; rom4x present
-cbtfail	jsr setvid
+	.byte 0			; rom4x present
+cbtfail:	jsr setvid
 	jsr setkbd
 	lda #>(nbtfail-1)
 	pha

@@ -3,5 +3,8 @@
 *.bin
 *.swp
 *.zip
+*.o
+*.lst
+*.b
 copyrom.sh
 

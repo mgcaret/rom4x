@@ -1,6 +1,7 @@
-#include "iic+.defs"
-.text
-* = $fb3c ; ~165 bytes free here
+.code
+.psc02
+.include "iic+.defs"
+	.org $fb3c ; ~165 bytes free here
 	cmp #$a9		; reset patch
 	bne chk2
 	jmp reset5x

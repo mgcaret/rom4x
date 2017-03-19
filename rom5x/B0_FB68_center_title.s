@@ -3,6 +3,6 @@
 ; then displayed it two characters to the *right* rather than one
 ; or to to the left.  It's a major
 ; pet peeve of mine, more so than the beep.
-.text
+.code
 	sta $040d,y
 
