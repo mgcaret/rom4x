@@ -41,5 +41,5 @@ the copied files.
 The accelerator reverse patch is a 1-byte patch that causes the IIc Plus to boot up
 at the normal speed.
 
-Pressing <ESC> at reset time will make the machine run at 4 MHz.
+Pressing ESC at reset time will make the machine run at 4 MHz.
 
