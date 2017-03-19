@@ -13,7 +13,7 @@ C572 - 8 bytes
 C7FB - 8 bytes
 C7FC - 7 bytes
 CE00 - 512 bytes not usable (MIG space)
-D134 - 76 bytes
+D3B5 - 75 bytes - Accelerator menu text
 D516 - 234 bytes - ROM 5X boot
 D6CE - 306 bytes - ROM 5X misc routines
 DB63 - 157 bytes - ROM 5X reset
@@ -23,9 +23,9 @@ F7ED - 19 bytes
 FB3C - 196 bytes - FBE2 ROM 5X dispatch
                  - Future: classic beep
 FC3C - 12 bytes
-FCC9 - 55 bytes
+FCC9 - 55 bytes - Accelerator speeds table
 FE96 - 352 bytes - but reserve 65816 vectors
-                 - Future ROM 5X accelerator enhancements
+                 - Accelerator enhancements
 
 Other potential usable space:
 Aux Bank

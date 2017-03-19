@@ -8,6 +8,9 @@
 chk2:	cmp #$ea		; boot patch
 	bne chk3
 	jmp boot5x
+.if newbeep
+chk3:
+.else
 chk3:	cmp #$40		; beep
 	bne dowait
 ; "classic air raid beep"
@@ -20,6 +23,7 @@ obell2:	lda #$0c
 	dey
 	bne obell2
 	bra dexit		; back to caller
+.endif
 dowait:	jsr $fcb5		; do delay if anything else
 	lda #>($fbe2-1)		; return to other bank here (in BELL1)
 	pha			; by pushing address onto
