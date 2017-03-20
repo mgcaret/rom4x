@@ -1,7 +1,7 @@
 .code
 .psc02
 .include "iic+.defs"
-	.org boot5x ; 234 bytes available, code assembles to 231
+	.org boot5x ; 234 bytes available, code assembles to 222
 	jsr titl5x		; "Apple IIc +"
 	jsr rdrecov		; try to recover ramdisk
 	lda power2 + rx_mslot	; get action saved by reset5x
@@ -102,11 +102,5 @@ rdinit:	bit rx_mslot*$100	; activate registers
 	ldy #rx_mslot		; slot offset
 	ldx #rx_devno		; register offset
 	rts
-; next is snippet of code to boot external 5.25
-bootext:	lda #$e0
-	ldy #$01
-	ldx #$60
-	jmp $c60b
-bt4xend = *
 
 
