@@ -16,6 +16,8 @@ task :clean do
   sh "rm -f *.o"
   sh "rm -f *.lst"
   sh "rm -f *.b"
+  sh "rm -f accel5x"
+  sh "rm -f POOF1 *.po"
 end
 
 desc "Assemble all source files"
@@ -60,5 +62,17 @@ end
 desc "Build SST27SF512 Image"
 task :sf512 => [:build_rom] do
   sh "cat #{dest_rom} #{dest_rom} > sf512_#{dest_rom}"
+end
+
+desc "Build accel5x test binary"
+task :accel5x do
+  sh "ca65 -D testaccel -o accel5x.o -l accel5x.lst B1_FD00_accel5x.s"
+  sh "ld65 -t none -o accel5x accel5x.o"
+end
+
+desc "Build accel5x test binary into accel5x.po disk image"
+task :"accel5x.po" => [:accel5x] do
+  sh "to_pro -140 accel5x"
+  sh "mv -f POOF1 accel5x.po"
 end
 

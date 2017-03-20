@@ -14,9 +14,13 @@
 ; into the ROM without moving the menu text and the speeds
 ; table.
 
-TESTBLD = 0                   ; set to 1 to enable test code that runs in random Apple II emulator at $2000
+.ifdef testaccel
+TESTBLD = 1
+.else
+TESTBLD = 0                   ; set to 1 to enable test code that runs in random Apple II hw/emulator at $2000
                               ; this disables the bank switch and uses the main RAM at $0E00 to simulate the
-                              ; MIG RAM.
+                              ; MIG RAM.  Will configure a Zip Chip as if it were the IIc+ Accelerator.
+.endif
 XTRACMD = 0                   ; set to 1 to enable extra accelerator speed commands
 ACCMENU = 1                   ; set to 1 to enable accelerator menu
 ADEBUG  = 0                   ; turn on debugging (copies registers to $300 whenever they are set)
@@ -24,6 +28,7 @@ ADEBUG  = 0                   ; turn on debugging (copies registers to $300 when
         .psc02
 .if TESTBLD
   ; test build of accel code
+  spdpct = 1
 .else
   .include "iic+.defs"
 .endif
@@ -446,15 +451,19 @@ dspd:   lda   ZIP5DSV       ; Speed in 5D register
         dex                 ; otherwise, next entry
         dex
         bpl   @sloop
-        ; fall through will say 0.00 MHz
+        ; fall through will say 0.00 MHz or 00%
 dspd1:  tya
         stx   COUNTER       ; which speed option is selected
 .if ::TESTBLD
         stx   $0e1f         ; DEBUG
 .endif
+.if ::spdpct
+        lda   #$a0          ; space
+.else
         and   #$03          ; MHz value
         ora   #$b0          ; to digit
-        sta   $072b         ; ones
+.endif
+        sta   $072b         ; ones (MHz) or 100s (%)
         inx
         lda   spdtab,x
         tay
@@ -463,11 +472,19 @@ dspd1:  tya
         lsr
         lsr
         ora   #$b0
-        sta   $072d         ; 10ths
+.if ::spdpct
+        sta   $072c         ; 10s (%)
+.else
+        sta   $072d         ; 10ths (MHz)
+.endif
         tya
         and   #$0f
         ora   #$b0
-        sta   $072e         ; 100ths
+.if ::spdpct
+        sta   $072d         ; 1s (%)
+.else
+        sta   $072e         ; 100ths (MHz)
+.endif
 aminp:  ldy   #$00
         lda   #$60
         sta   (UBFPTRL),y

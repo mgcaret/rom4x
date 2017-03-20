@@ -1,5 +1,7 @@
 ; options
 newbeep = 0		; 1 = use IIc+ beep
+spdpct  = 1		; 1 = use percent speeds in accel config
+
 
 ; hardware
 ;set80col = $c001
