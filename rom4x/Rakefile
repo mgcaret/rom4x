@@ -48,7 +48,7 @@ task :build_rom => [:assemble] do
         rom.setbyte(addr, b)
         addr += 1
       end
-      puts "\tNote: patched pver #{nzc} nonzero bytes!" if nzc > 0
+      puts "\tNote: patched over #{nzc} nonzero bytes!" if nzc > 0
     else
       puts "I dont know where to load #{t}"
     end 

@@ -207,18 +207,15 @@ coldst: lda   KBDSAVE
         ora   #$80
         sta   KBDSAVE
         jsr   MIGINIT
-warmst: ldx   ACWL
-        ldy   ACWH
-        lda   KBDSAVE
+warmst: lda   KBDSAVE
         cmp   #ESCKEY
         bne   doinit
         ; toggle accelerator speed
-        tya
+        lda   ACWH            ; kept in ACWH
         eor   #$08            ; toggle bit 4
-        tay
+        sta   ACWH
 doinit: jsr   AUNLK           ; unlock registers
-        jsr   ACOND           ; set enabled according to y reg
-        jsr   ASETR           ; set registers
+        jsr   ASETR1          ; set registers
         jsr   ALOCK           ; lock accelerator
         ; set powerup bytes
         lda   #PWRUPV0
@@ -285,10 +282,19 @@ exinit: rts
         sta   ZIP5A
         lda   #$10
         tsb   ACWH
-        rts
+        lda   #$80
+        trb   ACWH          ; z flag is 0 if bit 7 was 0
+        bne   :+            ; if DHiRes was off
+        bit   ZIP5E         ; otherwise make sure it is on
+        bra   :++
+:       bit   ZIP5F         ; make sure it is off
+:       rts
 .endproc ; ALOCK
 ; unlock accelerator registers
 .proc   AUNLK
+        lda   $c07f         ; RdDHiRes - bit 7 = 1 if off, 0 if on
+        and   #$80
+        tsb   ACWH          ; put in ACWH
         lda   #$5A
         sta   ZIP5A
         sta   ZIP5A
@@ -321,9 +327,10 @@ exinit: rts
         ora   ACWH            ; merge in existing ACWH less the bits we cleared above
         tay
         ;jsr   AUNLK          ; Apple code unlocks in write command, prob a bug.
-        jsr   ASETR
-        ;jsr   ALOCK
-        rts
+        ;jsr   ASETR
+        ;jsr   ALOCK          ; bug cont'd.
+        ;rts
+        ; fall through
 .endproc ; AWRIT
 ; set accelerator registers
 ; x = new ACWL
@@ -342,28 +349,29 @@ exinit: rts
         ora   ZIP5FSV         ; merge with existing $c05f values
         sta   ZIP5FSV         ; and put back
         ; now set ZIP registers from MIG RAM
-        jsr   ASETR1
+        ;jsr   ASETR1
 ;        plx
 ;        pla
 ;        plp
-        rts
+        ;rts
+        ; fall through
 .endproc ; ASETR1
 ; set accelerator registers from saved values in MIG
 .proc   ASETR1
-        ldy   ACWH
-        jsr   ACOND           ; conditionally enable accelerator
-        tya
-        and   #$08            ; is it disabled?
-        bne   setdn           ; if so, don't change other registers
-        ldx   #$03            ; otherwise set all registers from MIG
+        ldx   #$03            ; set all registers from MIG
+        stx   ZIP5B           ; turn on accelerator for writing
 @loop:  lda   ZIP5CSV,x
         sta   ZIP5C,x
+.if ::TESTBLD
+        sta   MIGRAM+$0c,x    ; copy to unused locs for inspection
+.endif
 .if ::ADEBUG
         sta   $300,x          ; DEBUG
 .endif
         dex
         bpl   @loop
-setdn:  rts
+        ldy   ACWH            ; ACWH
+        jmp   ACOND           ; leave accelerator in configured state
 .endproc ; ASETR1
 cmdtable:
         .word AINIT
@@ -396,12 +404,13 @@ cmdtable:
 .endproc ; AWSPD
 .endif
 IACWL:  .byte %01100111     ; initial ACWL - same as $C05C
-IACWH:  .byte %00010000     ; initial ACWH - b6 = 1=paddle fast, b4 = reg 1=lock/0=unlock
-                            ;                b3 = 1=accel disable, rest reserved
+IACWH:  .byte %01010000     ; initial ACWH - b6 = 1=paddle slow, b4 = reg 1=lock/0=unlock
+                            ;                b3 = 1=accel disable, rest reserved by apple
+                            ;                rom5x: b7 = state of DHiRes when accelerator was unlocked
 IREGV:  .byte %01100111     ; Initial $C05C - slots & speaker: b7-b1 = slot speed. b0 = speaker delay
         .byte %00000000     ; Initial $C05D - $00 = 4MHz
         .byte %01000000     ; Initial $C05E - b7=0 enable I/O sync, b6=undoc
-        .byte %00000000     ; Initial $C05F - b7=0 enable L/C accel, b6=0 paddle sync
+        .byte %01000000     ; Initial $C05F - b7=0 enable L/C accel, b6=1 paddle sync (slow)
 .if ::ACCMENU
 ; accelerator config menu
 ; ---------|---------|---------|---------|
@@ -433,8 +442,8 @@ amenu1: jsr   disp          ; disp menu with Accel Off
         sta   $06c6
         sta   $06c7
 dpdl:   lda   ZIP5FSV       ; 5F register has paddle delay
-        and   #$40          ; bit 6 = paddle delay (1 = defeat)
-        beq   dspd          ; 0 = on, skip
+        and   #$40          ; bit 6 = paddle delay (1 = slow)
+        bne   dspd          ; 1 = on, skip
         lda   #$e6          ; change on to off in menu
         sta   $0746
         sta   $0747
