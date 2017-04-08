@@ -1,3 +1,6 @@
+; *** This option only works with the orginial Apple accelerator ***
+; *** code.  Do not apply this option to the current release.    ***
+
 ; this reverses the accelerator to always start off at 1MHz
 ; <ESC> at reset then selects 4 MHz
 ; This is useful if you spend more time at 1 MHz, for games
