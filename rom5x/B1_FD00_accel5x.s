@@ -24,6 +24,7 @@ TESTBLD = 0                   ; set to 1 to enable test code that runs in random
 XTRACMD = 0                   ; set to 1 to enable extra accelerator speed commands
 ACCMENU = 1                   ; set to 1 to enable accelerator menu
 ADEBUG  = 0                   ; turn on debugging (copies registers to $300 whenever they are set)
+AOFFDFL = 0                   ; accelerator off by default
 
         .psc02
 .if TESTBLD
@@ -404,9 +405,13 @@ cmdtable:
 .endproc ; AWSPD
 .endif
 IACWL:  .byte %01100111     ; initial ACWL - same as $C05C
+.if ::AOFFDFL
+IACWH:  .byte %01011000     ; initial ACWH - accelerator OFF. See below for bits
+.else
 IACWH:  .byte %01010000     ; initial ACWH - b6 = 1=paddle slow, b4 = reg 1=lock/0=unlock
                             ;                b3 = 1=accel disable, rest reserved by apple
                             ;                rom5x: b7 = state of DHiRes when accelerator was unlocked
+.endif
 IREGV:  .byte %01100111     ; Initial $C05C - slots & speaker: b7-b1 = slot speed. b0 = speaker delay
         .byte %00000000     ; Initial $C05D - $00 = 4MHz
         .byte %01000000     ; Initial $C05E - b7=0 enable I/O sync, b6=undoc

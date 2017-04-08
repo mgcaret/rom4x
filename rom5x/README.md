@@ -1,13 +1,21 @@
 # ROM 5X by MG
 
-## PRELIMINARY, NEEDS MORE TESTING
+## Consider it a step beyond beta :-)
 
-*ll of the functionality, including the RAM Disk recovery and other functions,
+*All of the functionality, including the RAM Disk recovery and other functions,
 appear to work correctly, but I would appreciate any feedback if something isn't
 workign for you.*
 
 This is ROM 5X, providing the ROM 4X functionality to the Apple IIc Plus ROM
-version 5.
+version 5, plus some basic control functions for the Apple IIc Plus accelerator.
+
+There are some build options in accel5x.s - some functional, others needing more
+work, the most popular of which will no doubt be the option to reset the system
+with the accelerator in the disabled state.  The "extra commands" option will
+currently fail to build because the code gets too large, and is really only for
+experimental purposes.
+
+### Nitty Gritty
 
 There are almost no free bytes in the main bank of the IIc Plus firmware, so
 I had to get creative to get into the alternate bank, where I then had to split
@@ -36,10 +44,12 @@ that change the default behavior of the Apple IIc Plus.
 Enable options by copying the files to the main directory.  Disable the by removing
 the copied files.
 
-### Accelerator Reverse
+### (Obsolete) Accelerator Reverse
 
-The accelerator reverse patch is a 1-byte patch that causes the IIc Plus to boot up
-at the normal speed.
+This option was obsoleted by the inclusion of Accel5X in the project.
+
+The accelerator reverse patch is a 1-byte patch that causes a IIc Plus with the
+original Apple accelerator code to start at the "normal" 1 MHz speed.
 
 Pressing ESC at reset time will make the machine run at 4 MHz.
 
