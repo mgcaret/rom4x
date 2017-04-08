@@ -99,7 +99,11 @@ SWRTS2  = $C784
 .endif
 .proc   ACCEL
         bra   accel1
-        jmp   AMENU
+.if ::ACCMENU
+        jmp   AMENU           ; entry point for menu
+.else
+        rts                   ; otherwise return to caller if they want menu
+.endif
 accel1: php
         sei
         phy
@@ -600,6 +604,6 @@ msg1 = ::amenu1
 msg2 = ::amenu2
 .endif
 .endproc ; AMENU
-; check for run into vector area
+; check for run into vector and ROM checksum area
 .assert * < $ffe0, error, "accel5x overran $ffe0"
 .endif
