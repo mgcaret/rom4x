@@ -1,17 +1,22 @@
-#include "iic+.defs"
-.text
-* = $fb3c ; ~165 bytes free here
+.code
+.psc02
+.include "iic+.defs"
+	.org $fb3c ; ~165 bytes free here
 	cmp #$a9		; reset patch
 	bne chk2
 	jmp reset5x
 chk2:	cmp #$ea		; boot patch
 	bne chk3
 	jmp boot5x
+.if newbeep
+chk3:
+.else
 chk3:	cmp #$40		; beep
 	bne dowait
 ; "classic air raid beep"
 ; inspired by http://quinndunki.com/blondihacks/?p=2471
-	jsr $fcb5		; (new) WAIT for .1 sec delay
+	; jsr $fcb5		; (new) WAIT for .1 sec delay
+	jsr owait
 	ldy #$c0
 obell2:	lda #$0c
 	jsr owait		; old wait for correct sound
@@ -19,6 +24,7 @@ obell2:	lda #$0c
 	dey
 	bne obell2
 	bra dexit		; back to caller
+.endif
 dowait:	jsr $fcb5		; do delay if anything else
 	lda #>($fbe2-1)		; return to other bank here (in BELL1)
 	pha			; by pushing address onto

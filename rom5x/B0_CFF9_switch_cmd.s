@@ -5,9 +5,9 @@
 ; load the command $EA and proceed the same way.
 ; thus we get two dispatch codes in 6 bytes.
 
-#include "iic+.defs"
-.text
-* = $cff9 ; 7 bytes available here, but don't count on $CFFF
+.include "iic+.defs"
+.code
+	.org $cff9 ; 7 bytes available here, but don't count on $CFFF
 	lda #$a9	; lda opcode
 	nop		; jmp/jsr $cffa does lda #$ea
 	jmp $fbdf	; jump to bell1 hijack

@@ -1,5 +1,5 @@
-#include "iic+.defs"
-.text
-* = $fbe2 ; ~29 bytes free here
+.code
+.include "iic+.defs"
+	.org $fbe2 ; ~29 bytes free here
 	jmp $fb3c
 

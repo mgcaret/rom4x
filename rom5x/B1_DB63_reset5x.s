@@ -1,6 +1,7 @@
-#include "iic+.defs"
-.text
-* = reset5x ; max 157 bytes
+.code
+.psc02
+.include "iic+.defs"
+	.org reset5x ; max 157 bytes
 	stz power2 + rx_mslot	; action = normal reset
 	lda #>(rst5xrtn-1)	; common case
 	pha
@@ -8,12 +9,12 @@
 	pha			; note that this stays on stack
 	asl butn1		; option (closed apple)
 	bcs ckdiag
-exitrst jmp swrts2
+exitrst: jmp swrts2
 ; check to see if cmd_option (both apples) are down
-ckdiag	bit butn0		; command (open apple)
+ckdiag:	bit butn0		; command (open apple)
 	bmi exitrst		; return to RESET.X
 ; present menu because only closed apple is down
-menu	jsr menu5x		; display menu
+menu:	jsr menu5x		; display menu
 	jsr gkey5x
 	cmp #$b0		; "0"
 	bne ckkey1
@@ -24,13 +25,17 @@ menu	jsr menu5x		; display menu
 	lda #<(monitor-1)
 	pha
 	jmp swrts2		; rts to enter monitor
-ckkey1	cmp #$b2		; "2"
+ckkey1:	cmp #$b2		; "2"
 	beq doconf
 	cmp #$b4		; "4"
 	bne ckkey2
-doconf	jsr conf5x
+doconf:	jsr conf5x
 	bne menu		; go back to menu4x
-ckkey2	sec
+ckkey2:	cmp #$b7		; "7"
+	bne ckkey3
+	jsr $fd02		; accelerator menu
+	bra menu
+ckkey3:	sec
 	sbc #$b0		; ascii->number
 	bmi menu		; < 0 not valid
 	cmp #$07		; we will use 7 for accelerator later

@@ -12,33 +12,43 @@ end
 desc "Clean object files"
 task :clean do
   sh "rm -f #{dest_rom}"
-  sh "rm -f *.o65"
-  sh "rm -f *.o65.lbl"
+  sh "rm -f sf512_#{dest_rom}"
+  sh "rm -f *.o"
+  sh "rm -f *.lst"
+  sh "rm -f *.b"
 end
 
 desc "Assemble all source files"
-task :assemble => source_files.ext('.o65')
+task :assemble => source_files.ext('.b')
 
-rule ".o65" => ".s" do |t|
-  sh "xa -c -o #{t.name} -l #{t.name}.lbl #{t.source}"
+rule ".o" => ".s" do |t|
+  sh "ca65 -l #{t.name}.lst #{t.source}"
+end
+
+rule ".b" => ".o" do |t|
+  sh "ld65 -t none -o #{t.name} #{t.source}"
 end
 
 desc "Build ROM"
 task :build_rom => [:assemble] do
   puts "Building ROM image..."
-  obj_files = Rake::FileList.new('*.o65')
+  obj_files = Rake::FileList.new('*.b')
   rom = File.read(source_rom)
   obj_files.each do |t|
     if t =~ /B(\h)_(\h{4})/
       bnum = $1.to_i(16)
       badd = $2.to_i(16)
       addr = bnum * 16384 + badd - rom_base
-      puts "Loading #{t} into bank #{bnum} @ #{badd.to_s(16)}, file addr #{addr.to_s(16)}"
       fc = File.read(t)
+      fl = fc.bytes.count
+      puts "Loading #{t} into bank #{bnum} @ #{badd.to_s(16)}, file addr $#{addr.to_s(16)}, len $#{fl.to_s(16)} (#{fl})"
+      nzc = 0
       fc.each_byte do |b|
+        nzc += 1 if rom.getbyte(addr) != 0 && rom.getbyte(addr) != b
         rom.setbyte(addr, b)
         addr += 1
       end
+      puts "\tNote: patched over #{nzc} nonzero bytes!" if nzc > 0
     else
       puts "I dont know where to load #{t}"
     end 

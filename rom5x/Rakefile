@@ -13,21 +13,28 @@ desc "Clean object files"
 task :clean do
   sh "rm -f #{dest_rom}"
   sh "rm -f sf512_#{dest_rom}"
-  sh "rm -f *.o65"
-  sh "rm -f *.o65.lbl"
+  sh "rm -f *.o"
+  sh "rm -f *.lst"
+  sh "rm -f *.b"
+  sh "rm -f accel5x"
+  sh "rm -f POOF1 *.po"
 end
 
 desc "Assemble all source files"
-task :assemble => source_files.ext('.o65')
+task :assemble => source_files.ext('.b')
 
-rule ".o65" => ".s" do |t|
-  sh "xa -c -o #{t.name} -l #{t.name}.lbl #{t.source}"
+rule ".o" => ".s" do |t|
+  sh "ca65 -l #{t.name}.lst #{t.source}"
+end
+
+rule ".b" => ".o" do |t|
+  sh "ld65 -t none -o #{t.name} #{t.source}"
 end
 
 desc "Build ROM"
 task :build_rom => [:assemble] do
   puts "Building ROM image..."
-  obj_files = Rake::FileList.new('*.o65')
+  obj_files = Rake::FileList.new('*.b')
   rom = File.read(source_rom)
   obj_files.each do |t|
     if t =~ /B(\h)_(\h{4})/
@@ -55,5 +62,17 @@ end
 desc "Build SST27SF512 Image"
 task :sf512 => [:build_rom] do
   sh "cat #{dest_rom} #{dest_rom} > sf512_#{dest_rom}"
+end
+
+desc "Build accel5x test binary"
+task :accel5x do
+  sh "ca65 -D testaccel -o accel5x.o -l accel5x.lst B1_FD00_accel5x.s"
+  sh "ld65 -t none -o accel5x accel5x.o"
+end
+
+desc "Build accel5x test binary into accel5x.po disk image"
+task :"accel5x.po" => [:accel5x] do
+  sh "to_pro -140 accel5x"
+  sh "mv -f POOF1 accel5x.po"
 end
 

@@ -3,5 +3,10 @@
 *.bin
 *.swp
 *.zip
+*.o
+*.lst
+*.b
+*.po
 copyrom.sh
+rom5x/accel5x
 

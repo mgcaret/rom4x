@@ -5,7 +5,7 @@
 ; This patch was inspired by Quinn Dunki's functionally equivalent
 ; firmware mod found here: http://quinndunki.com/blondihacks/?p=2546
 
-.text
-* = $fdd5
+.code
+	.org $fdd5
 	.byte $f0
 
