@@ -1,5 +1,7 @@
 # ROM 4X and 5X by MG
 
+## This document is currently a bit disorganized, a bit out of date, and a bit long.  Sorry.
+
 ROM 4X and 5X are enhancements to the Apple //c version 4 and Apple IIc Plus firmware ROMs.
 
 It adds the following features to the Apple //c and IIc Plus firmware:
