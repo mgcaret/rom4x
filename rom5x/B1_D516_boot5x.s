@@ -1,7 +1,7 @@
 .code
 .psc02
 .include "iic+.defs"
-          .org boot5x ; 234 bytes available, code assembles to 222
+          .org boot5x ; 234 bytes available, code assembles to 220
           jsr titl5x                    ; "Apple IIc +"
           jsr rdrecov                   ; try to recover ramdisk
           lda power2 + rx_mslot         ; get action saved by reset5x

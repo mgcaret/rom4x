@@ -47,7 +47,7 @@ rst4xrtn = $facb	; where to return from reset4x
 bt4xrtn = $fb19		; where to return from boot4x
 reset4x = $e000		; reset routine
 boot4x = $e180		; boot routine
-nbtfail = $e300		; new boot fail
+nbtfail = $e400		; new boot fail
 banner = $fb60		; 'Apple //c'
 testsize = $d99f	; test ramdisk size (rom 3 = $d995)
 monitor = $ff59		; monitor
