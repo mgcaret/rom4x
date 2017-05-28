@@ -2,77 +2,77 @@
 .code
 .include "iic.defs"
           .org reset4x
-          stz power2 + rx_mslot        ; action = normal boot
-          asl butn1                ; closed apple
+          stz power2 + rx_mslot     ; action = normal boot
+          asl butn1                 ; closed apple
           bcs ckdiag
-exitrst:  jmp gorst4x                ; return to RESET.X
+exitrst:  jmp gorst4x               ; return to RESET.X
 ; check to see if both apples are down
-ckdiag:   bit butn0                ; open apple
-          bmi exitrst                ; return to RESET.X
+ckdiag:   bit butn0                 ; open apple
+          bmi exitrst               ; return to RESET.X
 ; present menu because only closed apple is down
-menu4x:   jsr gobanner                ; "Apple //c"
-          ldx #$00                ; menu start
-          jsr disp                ; show it
+menu4x:   jsr gobanner              ; "Apple //c"
+          ldx #$00                  ; menu start
+          jsr disp                  ; show it
           jsr gtkey
-          cmp #$b0                ; "0"
+          cmp #$b0                  ; "0"
           bne ckkey1
-          ldx #$ff                ; reset stack
+          ldx #$ff                  ; reset stack
           txs
-          lda #>(monitor-1)        ; monitor entry on stack
+          lda #>(monitor-1)         ; monitor entry on stack
           pha
           lda #<(monitor-1)
           pha
           jmp swrts2                ; rts to enter monitor
-ckkey1:   cmp #$b2                ; "2"
+ckkey1:   cmp #$b2                  ; "2"
           beq doconf
-          cmp #$b4                ; "4"
+          cmp #$b4                  ; "4"
           bne ckkey2
 doconf:   jsr confirm
           bne menu4x                ; go back to menu4x
 ckkey2:   sec
-          sbc #$b0                ; ascii->number
+          sbc #$b0                  ; ascii->number
           bmi menu4x                ; < 0 not valid
           cmp #$08
           bpl menu4x                ; > 7 not valid
-          sta power2 + rx_mslot        ; for boot4x
-          stz softev + 1                ; deinit coldstart
-          stz pwerdup                ; ditto
+          sta power2 + rx_mslot     ; for boot4x
+          stz softev + 1            ; deinit coldstart
+          stz pwerdup               ; ditto
           bra exitrst
 gtkey:    lda #$60
           sta ($0),y                ; cursor
-          sta kbdstrb                ; clr keyboard
-kbdin:    lda kbd                        ; get key
+          sta kbdstrb               ; clr keyboard
+kbdin:    lda kbd                   ; get key
           bpl kbdin
-          sta kbdstrb                ; clear keyboard
+          sta kbdstrb               ; clear keyboard
           sta ($0),y                ; put it on screen
           rts
 ; display message, input x = message start relative to msg1
-disp:     stz $0                        ; load some safe defaults
+disp:     stz $0                    ; load some safe defaults
           lda #$04
           sta $1
-          ldy #$0                        ; needs to be zero
+          ldy #$0                   ; needs to be zero
 disp0:    lda msg1,x                ; get message byte
-          bne disp1                ; proceed if nonzero
-          rts                        ; exit if 0
-disp1:    inx                        ; next byte either way
-          cmp #$20                ; ' '
-          bcc disp2                ; start of ptr if < 20 
-          eor #$80                ; invert high bit
+          bne disp1                 ; proceed if nonzero
+          rts                       ; exit if 0
+disp1:    inx                       ; next byte either way
+          cmp #$20                  ; ' '
+          bcc disp2                 ; start of ptr if < 20 
+          eor #$80                  ; invert high bit
           sta ($0),y                ; write to mem
-          inc $0                        ; inc address low byte
-          bra disp0                ; back to the beginning
-disp2:    sta $1                        ; write address high
+          inc $0                    ; inc address low byte
+          bra disp0                 ; back to the beginning
+disp2:    sta $1                    ; write address high
           lda msg1,x                ; get it
-          sta $0                        ; write address low
-          inx                        ; set next msg byte
-          bra disp0                ; back to the beginning
+          sta $0                    ; write address low
+          inx                       ; set next msg byte
+          bra disp0                 ; back to the beginning
 confirm:  pha
-          ldx #(msg3-msg1)        ; ask confirm
+          ldx #(msg3-msg1)          ; ask confirm
           jsr disp
           jsr gtkey
           plx
-          ora #$20                ; to lower
-          cmp #$f9                ; "y"
+          ora #$20                  ; to lower
+          cmp #$f9                  ; "y"
           php
           txa
           plp
@@ -92,30 +92,33 @@ msg1 = *
           .byte $04,$2e,"6 Boot Int. 5.25"
           .byte $04,$ae,"7 Boot Ext. 5.25"
           .byte $07,$5f,"By M.G."
-msg2:     .byte $07,$db,"ROM 4X 04/08/17"
+msg2:     .byte $07,$db,"ROM 4X 05/27/17"
           .byte $05,$ae,$00                ; cursor pos in menu
 msg3:      .byte $05,$b0,"SURE? ",$00
+
+; Boot4X - the boot portion of the program
+.assert   * < boot4x, warning, .sprintf("Boot4X overrun! * = %x, > %x", *, boot4x)
           .res boot4x - *, 0
           .org boot4x
           jsr gobanner              ; "Apple //c"
           jsr rdrecov               ; try to recover ramdisk
           lda power2 + rx_mslot     ; get action saved by reset4x
-          beq :+
+          beq :+                    ; unset, go look for config on ram card
           pha                       ; save it
-          bra selboot               ; set, go do it
-:         lda numbanks,y            ; (y should be OK here) ram card present?
+          bra selboot               ; now go do it
+:         lda numbanks,y            ; (y should be set in rdrecov) ram card present?
           beq boot6                 ; nope, boot slot 6
           jsr getcfg                ; try to get config
           bcs boot4                 ; no config, normal boot
           ;stx $7d2
           ;sty $7d3
-          phx                       ; config present, move on
+          phx                       ; config present, save it and move on
           lda #'C'                  ; tell user
           sta $7d1                  ; on screen
 selboot:  ldx #(msg2-msg1)          ; short banner offset
           jsr disp                  ; display it
-          pla                       ; boot selection
-          sta $7d2
+          pla                       ; get boot selection from stack
+          ;sta $7d2
 btc2:     cmp #$02                  ; clear ramcard
           bne btc3
           jsr rdclear               ; do clear
@@ -231,10 +234,11 @@ bt4xend = *
         chktype   = $06             ; 'BIN' - easy to set auxtype with bsave
         entbuf    = $0280
 ; zp locs, safe to use under our circumstances
-        blkptrl   = $06
+        blkptrl   = $06             ; block we are going to read
         blkptrh   = blkptrl + 1
-        entryl    = $08
-        nentries  = $09
+        entryl    = $08             ; length of an entry
+        nentries  = $09             ; number of entries per block
+        blkcnt    = $0a             ; block counter for safety
 .proc   getcfg
         jsr rdinit
         lda #$02                    ; first block of volume directory
@@ -255,7 +259,8 @@ bt4xend = *
         cmp #$f0                    ; storage type is $f?
         bne nocfg                   ; nope, eom
         lda #$23                    ; offset of directory entry length in block
-        sta addrl,x
+        sta blkcnt                  ; may as well use this for the safety check
+        sta addrl,x                 ; set data pointer
         lda data,x                  ; grab entry length
         sta entryl                  ; save it
         ldy data,x                  ; entries per block
@@ -263,6 +268,8 @@ bt4xend = *
         bra nxtbl1                  ; skip setting slinky block and nentries, already there
 nxtblk: jsr setblk
         beq nocfg                   ; just set block 0, eom
+        dec blkcnt                  ; decrease safety counter
+        beq nocfg                   ; and if we hit zero, bail out
         ldy nentries                ; restore # entries per block+1 into y
 nxtbl1: jsr gnxtblk                 ; set next block pointer, leave data ptr at offset $04
 nxtent: dey                         ; next entry, assumes y has # of entries remaining to check
