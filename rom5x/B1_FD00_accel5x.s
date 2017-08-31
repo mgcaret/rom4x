@@ -173,10 +173,11 @@ acceldn:
         plx
         ply
         plp
-        clc
-        cmp   #$00
-        beq   doexit
-        sec
+;        clc
+;        cmp   #$00
+;        beq   doexit
+;        sec
+        cmp   #$01
 doexit: 
 .if ::TESTBLD
         rts
