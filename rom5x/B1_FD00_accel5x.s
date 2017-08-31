@@ -173,11 +173,13 @@ acceldn:
         plx
         ply
         plp
-;        clc
-;        cmp   #$00
+; original code:
+;        clc                  ; ...
+;        cmp   #$00           ; sets carry, derp
 ;        beq   doexit
-;        sec
-        cmp   #$01
+;        sec                  ; carry was set anyway...
+
+        cmp   #$01            ; better, carry reflect error status
 doexit: 
 .if ::TESTBLD
         rts
