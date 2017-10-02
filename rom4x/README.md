@@ -2,31 +2,46 @@
 
 ROM 4X is a collection of enhancements to the Apple //c version 4.  See the top level [README.md](../README.md) for more general information on ROM 4X and ROM 5X.
 
-It adds the following features to the Apple //c and IIc Plus firmware:
+It adds the following features to the Apple //c:
 
-  - Identifies and reinstates a *bootable* (it must have something that looks like a boot block!) RAM disk from battery-backed expansion memory (see below), such as the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) from A2Heaven.
-  - Provides a menu of various tools upon pressing Ctrl+Closed-Apple+Reset (or holding Closed-Apple when powering up), that let you:
     - Enter the monitor unconditionally.
     - Reboot the machine (enter standard boot sequence).
     - Zero the RAM card, in case it is corrupted.
     - Execute the machine and RAM card diagnostics.
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
-  - *New as of 04/25/2017*: By saving a file on the RAM card, control the way the system boots by default.
-  - The system drops to BASIC if no bootable device is found (this is the default behavior in the IIc Plus).
+    - The system drops to BASIC if no bootable device is found (this is the default behavior in the IIc Plus).
+    - Configure default boot device by saving a file on the RAM Disk.
+
+RAM expansion cards known to work with ROM 4X include the Apple Memory Expansion Card (but no battery!), and the A2Heaven [RAM Express II](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=146) for the original //c, and the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
 
 # User Guide
+
+## Obtaining
+
+**Due to copyright law, I do NOT provide full ready-to-burn binaries at this time.  Some assembly (but not necessarily an assembler) is required!**
+
+You may either build it yourself which guarantees that you have the latest version and feature branch that you want, or you can check the [web site for ROM 4X/5X](http://apple2.guidero.us/doku.php?id=projects:rom_4x_and_5x) for binary releases.
+
+### Binary Releases
+
+The binary releases consist of a zip file with the assembled and linked patches, a checksum file, and a Bash script.  You must have a unix-like system (MacOS, Linux, etc.) or, on Windows, Cygwin or the Windows Subsystem for Linux configured.
+
+The shell script will perform the following:
+
+  * Download the original Apple ROM image from a well-known location.
+  * Apply the patches.
+  * Validate the checksums of both the original ROM image and the patched ROM image.
 
 ## Installation
 
 ### Real System
 
-Assuming you already have it burned onto a chip (I use SST27SF512s flash chips which hold 64K and Atmel 27C256, which hold 32K, and program with a TL866), generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless, you are installing this ROM in an original //c.  I don't recommend installing it on a non-memory expansion //c unless you have expansion memory that looks like the 'slinky' memory of the later models.  ROM 4X/5X doesn't know about RAMWorks-style expansions.
+Burn the ROM image (generally named iic_rom4x.bin) onto a 27C256 chip, or burn twice (into the lower and upper halves) of a 27C512 chip.  If you can obtain an SST27SF512 flash EEPROM, that is a great option.
 
-Cards known to work with ROM 4X include the Apple Memory Expansion Card (but no battery!), and the A2Heaven [RAM Express II](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=146) for the original //c, and the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
+Once you have a ROM chip, generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless you are installing this ROM in an original //c.
+
 
 ### Emulator
-
-#### //c
 
 Copy the ROM into the appropriate location for your emulator.  At the time of writing the only emulator I am aware of that can emulate the //c with memory expansion is [Catakig](http://catakig.sourceforge.net/) for MacOS.  It's a bit older of an emulator but it runs fine on newer MacOSes.
 
@@ -40,7 +55,7 @@ Power on your machine.  Everything should look and work *almost* like it did bef
 
 If you don't have an initialized RAM disk, format the card RAM disk with something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on it.  Power off the machine, and power it on after a few minutes.  You should boot off of the RAM disk.  You might notice an "R" flash on the screen for an instant before ProDOS loads.
 
-Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing reset.  You should see the following menu appear (on a //c, IIc Plus menu is more compact to save firmware space):
+Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing reset.  You should see the following menu appear:
 
 ```
 0 Monitor
@@ -97,8 +112,6 @@ This destructively copies a short routine to $800, which under most circumstance
 
 ### Configuration File
 
-**EXPERIMENTAL**
-
 If the RAM card is ProDOS-formatted, you can save a binary file in the volume directory called `BOOTX`.  ROM 4X will find this file and use the Aux Type field (the load address) to set a default of the menu options above when no option has been selected using the menu.  For example, `BSAVE /RAM4/BOOTX,A6,L0` will cause ROM 4X to skip booting the RAM card and go straight to booting the internal floppy drive (menu item 6).  The contents of `BOOTX` are irrelevant, only the Aux Type is used.  You cannot set it to jump into the monitor because that action happens before the boot code takes over.
 
 You will know the configuration file is being used because the ROM 4X line will appear on the bottom of the screen and a flashing 'C' will appear in the lower-left corner.
@@ -111,14 +124,13 @@ You will know the configuration file is being used because the ROM 4X line will 
 
 To build the new firmware, you must start with a copy of the repository, and obtain a copy of the Apple //c version 4 ROM.  The patches to the firmware work with the ROM dump that has sha256sum:
 
-
 ```
 8ad5e6c4ed15d09b62183965b6c04762610d4b26510afc1896bdb4ecc55da883
 ```
 
 It may work with other ROM dumps, it will *not* work with any other ROM versions, including ROM 3 and earlier.  You must build ROM 4X using a ROM 4 dump.
 
-Place the ROM dump in the directory with the other files and name it `iic_rom4.bin`.
+The Rakefile will download the file from a well-known location if it is not already present.  It also verifies the checksum.
 
 Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  (Note: The code was developed originally using [xa](http://www.floodgap.com/retrotech/xa/)).
 
@@ -126,7 +138,7 @@ Finally you will need [Ruby](https://www.ruby-lang.org/en/) and [Rake](https://g
 
 Once you have it all together change to the directory with the source files and original ROM image and type `rake`.
 
-If all goes well, you will have a shiny new `iic_rom4x.bin` or `iic+_rom5x.bin`.
+If all goes well, you will have a shiny new `iic_rom4x.bin`.
 
 If you intend to build an image for a 512-kbit chip such as the SST27SF512, do `rake sf512`.
 
@@ -230,4 +242,5 @@ All cases:  When any menu option is selected, the "ROM 4X MM/DD/YY" message is d
 ### Ideas for Future
 
   - Replace Apple Slinky code with RamFactor code.  (Difficulty:  Hard)
+
 
