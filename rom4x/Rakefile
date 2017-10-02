@@ -1,21 +1,53 @@
-source_rom = "iic_rom4.bin"
-dest_rom = "iic_rom4x.bin"
+rom_url = 'https://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/ROM%20Images/Apple%20IIc%20ROM%2004%20-%20341-0445-B.bin'
+source_rom = 'iic_rom4.bin'
+source_rom_sha256 = '8ad5e6c4ed15d09b62183965b6c04762610d4b26510afc1896bdb4ecc55da883'
+dest_rom = 'iic_rom4x.bin'
+distzip = 'iic_rom4x.zip'
 rom_base = 0xc000
 
 source_files = Rake::FileList.new('*.s')
 
-desc "Default: clean and build it"
+desc 'Default: clean and build it'
 task :default => [:clean, :assemble, :build_rom] do
   sh "ls -l #{dest_rom}"
 end
 
-desc "Clean object files"
+task :zip => [:clean, :assemble, :build_zip] do
+  sh "ls -l #{dest_rom}"
+end
+
+desc 'Clean object files'
 task :clean do
   sh "rm -f #{dest_rom}"
   sh "rm -f sf512_#{dest_rom}"
   sh "rm -f *.o"
   sh "rm -f *.lst"
   sh "rm -f *.b"
+  sh "rm -f rom.sha256"
+  sh "rm -f make_rom.sh"
+  sh "rm -f #{distzip}"
+end
+
+desc 'Obtain ROM'
+rule source_rom do
+  require 'open-uri'
+  
+  puts "Downloading ROM..."
+  
+  File.open(source_rom, "wb") do |romfile|
+    open(rom_url) do |wwwfile|
+      romfile.write(wwwfile.read)
+    end
+  end
+end
+
+desc "Verify ROM Checksum"
+task :checksum_rom => source_rom do
+  require 'digest'
+
+  sha256 = Digest::SHA256.file source_rom
+  fail "ROM checksum failed" unless sha256.hexdigest == source_rom_sha256
+  puts "Source ROM appears correct!"
 end
 
 desc "Assemble all source files"
@@ -30,7 +62,7 @@ rule ".b" => ".o" do |t|
 end
 
 desc "Build ROM"
-task :build_rom => [:assemble] do
+task :build_rom => [:assemble, :checksum_rom] do
   puts "Building ROM image..."
   obj_files = Rake::FileList.new('*.b')
   rom = File.read(source_rom)
@@ -62,3 +94,60 @@ task :sf512 => [:build_rom] do
   sh "cat #{dest_rom} #{dest_rom} > sf512_#{dest_rom}"
 end
 
+desc "Build disributable ZIP"
+task :build_zip => [:build_rom] do
+  require 'digest'
+  require 'date'
+  
+  sha256 = Digest::SHA256.file dest_rom
+  shafile = <<EOF
+#{source_rom_sha256}  #{source_rom}
+#{sha256.hexdigest}  #{dest_rom}
+EOF
+  
+  dd_cmds = []
+  
+  puts "Building distributable ZIP..."
+  obj_files = Rake::FileList.new('*.b')
+  obj_files.each do |t|
+    if t =~ /B(\h)_(\h{4})/
+      bnum = $1.to_i(16)
+      badd = $2.to_i(16)
+      addr = bnum * 16384 + badd - rom_base
+      dd_cmds << "dd if=#{t} of=#{dest_rom} bs=1 seek=#{addr} conv=notrunc"
+      sh "zip #{distzip} #{t}"
+    end
+  end
+  
+  puts "Creating maker script..."
+  
+  script = <<EOF
+#!/bin/bash
+set -e
+BDATE="#{DateTime.now.to_s}"
+ROM_URL="#{rom_url}"
+echo ${BDATE}
+if [ -e `which curl` ]; then
+  curl -s "${ROM_URL}" > #{source_rom}
+elif [ -e `which wget` ]; then
+  wget -O #{source_rom} "${ROM_URL}"
+else
+  echo "Can't download source ROM image!"
+fi
+cp #{source_rom} #{dest_rom}
+#{dd_cmds.join("\n")}
+if [ -e `which shasum` ]; then
+  shasum -a 256 -c rom.sha256
+elif [ -e "sha256sum" ]; then
+  sha256sum -c rom.sha256
+else
+  echo "Please check the .bin files against rom.sha256"
+fi
+echo "#{dest_rom} created!"
+EOF
+
+  File.write('rom.sha256', shafile)
+  File.write('make_rom.sh', script)
+  
+  sh "zip #{distzip} rom.sha256 make_rom.sh"
+end
