@@ -37,5 +37,5 @@ See the [ROM 5X README.md](rom5x/README.md).
 
 ## The Whole Story
 
-See [story.md](story.md).
+Why did I do this?  See [story.md](story.md).
 
