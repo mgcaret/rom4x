@@ -11,4 +11,5 @@ copyrom.sh
 rom5x/accel5x
 make_rom.sh
 rom.sha256
+**/.DS_Store
 
