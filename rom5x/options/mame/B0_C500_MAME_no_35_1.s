@@ -4,10 +4,9 @@
 ; identify as a block device.
 .code
 .include "iic+.defs"
-rompatch $c500,0,"MAME_no_35_1"
+          .org $c500
           ldx #$00
           lda #$c6
           stx $00
           sta $01
           jmp ($00)
-endpatch
