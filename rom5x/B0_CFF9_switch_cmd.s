@@ -10,6 +10,6 @@
 	.org $cff9 ; 7 bytes available here, but don't count on $CFFF
 	lda #$a9	; lda opcode
 	nop		; jmp/jsr $cffa does lda #$ea
-	jmp $fbdf	; jump to bell1 hijack
+	jmp $c7fc	; jump to 5X dispatcher
 ; total 6 bytes.
 

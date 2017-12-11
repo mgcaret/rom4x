@@ -2,16 +2,15 @@ Inventory of zeros of 5 bytes or more in the IIc Plus ROM
 
 Main Bank
 C1FB - 5 bytes
-C4EE - 12 bytes
+C4EE - 12 bytes - delete key fix
 C5F3 - 5 bytes
-C6FB - 5 bytes
-C9A1 - 9 bytes
+C6FB - 5 bytes - but Disk II ID here at C6FF
+C9A1 - 9 bytes - beep merlin fix part 2
 CFF9 - 7 bytes - ROM 5X switcher
 
 Aux Bank
 C572 - 8 bytes
-C7FB - 8 bytes
-C7FC - 7 bytes
+C7FC - 7 bytes - ROM 5X dispatch jump at $C7FF
 CE00 - 512 bytes not usable (MIG space)
 D3B5 - 75 bytes - Accelerator menu text
 D516 - 234 bytes - ROM 5X boot
