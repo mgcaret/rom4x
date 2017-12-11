@@ -81,7 +81,7 @@ msg1 = *
         .byte $04,$2e,"6 Boot 5.25"
         .byte $04,$ae,"7 Accelerator"
         .byte $07,$5f,"By M.G."
-msg2:   .byte $07,$db,"ROM 5X 11/09/17"
+msg2:   .byte $07,$db,"ROM 5X 12/10/17"
         .byte $05,$ae,$00		; cursor pos in menu
 msg3:   .byte $05,$b0,"SURE? ",$00
 ; metadata to identify build conditions
