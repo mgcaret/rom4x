@@ -132,7 +132,7 @@ It may work with other ROM dumps, it will *not* work with any other ROM versions
 
 The Rakefile will download the file from a well-known location if it is not already present.  It also verifies the checksum.
 
-Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  (Note: The code was developed originally using [xa](http://www.floodgap.com/retrotech/xa/)).
+Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  Only the assembler and linker are required.  Older versions may complain about argument order, generally versions identifying as "2.16" built from the ca65 git master branch work fine.
 
 Finally you will need [Ruby](https://www.ruby-lang.org/en/) and [Rake](https://github.com/ruby/rake).
 

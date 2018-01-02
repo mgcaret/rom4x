@@ -132,7 +132,7 @@ It may work with other ROM dumps, it will *not* work with any other ROM versions
 
 The Rakefile will download the file from a well-known location if it is not already present.  It also verifies the checksum.
 
-Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  (Note: The code was developed originally using [xa](http://www.floodgap.com/retrotech/xa/)).
+Now you will need a 65C02 cross assembler.  The current codebase is developed using ca65 from the [cc65](http://www.cc65.org/) project.  Only the assembler and linker are required.  Older versions may complain about argument order, generally versions identifying as "2.16" built from the ca65 git master branch work fine.
 
 Finally you will need [Ruby](https://www.ruby-lang.org/en/) and [Rake](https://github.com/ruby/rake).
 
@@ -144,7 +144,6 @@ If you intend to build an image for a 512-kbit chip such as the SST27SF512, do `
 
 ### Build Options
 
-
 There are some build options in accel5x.s - some functional, others needing more
 work, the most popular of which will no doubt be the option to reset the system
 with the accelerator in the disabled state.  The "extra commands" option will
@@ -155,20 +154,13 @@ experimental purposes.
 
 ### First Thing's First
 
-Sadly, there are no working emulations of the IIc Plus at this time.
+Sadly, there are no fully working emulations of the IIc Plus at this time.  However, an optional set of patches (in the options/mame directory) will enable ROM 5X to run in MAME (git master branch) using the apple2cp emulation.
 
-Sice you must test on a real machine, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
+Since you must ultimately test on a real machine, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
 
 ### Nitty Gritty
 
 There are almost no free bytes in the main bank of the IIc Plus firmware, so I had to get creative to get into the alternate bank, where I then had to split the code up across multiple smaller free spaces due to the massive 3.5 drive handling code.  Ironically this makes the code larger as well.
-
-For those interested, I hijack the monitor BEEP1 routine.  The beep routine has an LDA #$40 and then calls WAIT with this value for a .1 second delay, presumably so that multiple beeps are distinct from each other.
-
-I patch the JSR WAIT to be STA $C028, which switches to the other bank. The code in the other bank checks the accumulator and for two values calls either reset5x or boot5x, for a third value ($40 loaded by BEEP1) does the classic Apple II "air raid" beep sound, and for any other value executes the WAIT
-(assuming that we got there from BEEP1) and returns back to BEEP1.
-
-Then, in only 6 bytes I can create two entry points that load the right values into the A register that we need for the reset or boot routines, and then jump to the above patch.
 
 ### Apple //c Technical Reference and other Documentation
 
