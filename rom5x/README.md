@@ -155,9 +155,9 @@ experimental purposes.
 
 ### First Thing's First
 
-Sadly, there are no fully working emulations of the IIc Plus at this time.  However, an optional set of patches (in the options/mame directory) will enable ROM 5X to run in MAME (git master branch) using the apple2cp emulation.
+See above for the list of working emulators that can run the Apple IIc Plus firmware.
 
-Since you must ultimately test on a real machine, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
+If you will test on a real machine, be aware that the ROM socket is not rated for a large number of insertions and you *will* break something after a while.  You may consider putting a machine-pin DIP socket or a ZIF socket into the CPU socket position.  This can be done by desoldering the original socket if you have the skills, or by plugging the new socket into the existing CPU socket.  If you do do the latter you should consider the new socket permanent as the socket pins are thicker than a ROM chip's and removing it may leave the socket in such a state as to not be able to make good contact with a subsequent chip.
 
 ### Nitty Gritty
 
@@ -167,9 +167,9 @@ There are almost no free bytes in the main bank of the IIc Plus firmware, so I h
 
 You need this.
 
-The Apple //c Technical Reference Manual that is available on the internet has the firmware listing for ROM 3.  ROM 4 fixes a few bugs that were in ROM 3, including with the memory card driver.  The changes are minor and affect some of the offsets of routines in the RAM card support, but it is easy to figure them out.
+The Apple //c Technical Reference Manual that is available on the internet has the firmware listing for ROM 3.  ROM 4 fixes a few bugs that were in ROM 3, including with the memory card driver.  The changes are minor and affect some of the offsets of routines in the RAM card support, but it is easy to figure them out.  ROM 5 adds the 3.5 drive code, but largely leaves the main firmwware bank untouched.
 
-[This](http://www.1000bit.it/support/manuali/apple/technotes/memx/tn.memx.1.html) tech note is also helpful as it documents the screen holes and some of the card behavior including under what conditions it reformats.  Though the power2 byte is *not* used by the Apple //c code -- it is commented out in the firmware listings in the Technical Reference.  ROM 4X uses it for the menu function.
+[This](http://www.1000bit.it/support/manuali/apple/technotes/memx/tn.memx.1.html) tech note is also helpful as it documents the screen holes and some of the card behavior including under what conditions it reformats.  Though the power2 byte is *not* used by the Apple //c code -- it is commented out in the firmware listings in the Technical Reference.  ROM 5X uses it for the menu function.
 
 [This](http://www.1000bit.it/support/manuali/apple/technotes/aiic/tn.aiic.5.html) technical note is a little less helpful for this project.
 
@@ -209,6 +209,6 @@ Check each item, the expectation is that the sytem does what is listed in the me
 
 ### Ideas for Future
 
-  - Replace Apple Slinky code with RamFactor code.  (Difficulty:  Very Hard or Impossible)
+  - Replace Apple Slinky code with RamFactor code.  (Difficulty:  Hard.  May require sacrificing the diagnostics.)
 
 
