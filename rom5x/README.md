@@ -1,20 +1,20 @@
 # ROM 5X by MG
 
-ROM 5X is a collection of enhancements to the Apple //c version 4.  See the top level [README.md](../README.md) for more general information on ROM 4X and ROM 5X.
+ROM 5X is a collection of enhancements to the Apple //c Plus (ROM version 5).  See the top level [README.md](../README.md) for more general information on ROM 4X and ROM 5X.
 
-It adds the following features to the Apple //c:
+It adds the following features to the Apple //c Plus:
 
     - Enter the monitor unconditionally.
     - Reboot the machine (enter standard boot sequence).
     - Zero the RAM card, in case it is corrupted.
     - Execute the machine and RAM card diagnostics.
-    - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
-    - Menu control the built-in accelerator.
+    - Tell the machine to boot the SmartPort/3.5 drive or the internal floppy drive.
+    - Menu control the built-in accelerator (via main menu or ctrl+tab+reset).
     - Accelerator settings persist across resets.
     - Build option to default the system to 1 MHz.
     - Changes ctrl+esc+reset to toggle the accelerator rather than turn it off only.
 
-RAM expansion cards known to work with ROM 4X include the AE RAM Express Cards (but no battery!), and the A2Heaven [RAM Express II](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=146) for the original //c, and the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
+RAM expansion cards known to work with ROM 5X include the AE RAM Express Cards (but no battery!), and the A2Heaven [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
 
 # User Guide
 
@@ -45,9 +45,10 @@ Once you have a ROM chip, generally the instructions [here](http://mirrors.apple
 
 ### Emulator
 
-Copy the ROM into the appropriate location for your emulator.  At the time of writing the only emulator I am aware of that can emulate the //c with memory expansion is [Catakig](http://catakig.sourceforge.net/) for MacOS.  It's a bit older of an emulator but it runs fine on newer MacOSes.
+Copy the ROM into the appropriate location for your emulator.  As of July 2018, the following emulators are known to successfully emulate the Apple IIc Plus:
 
-MAME's Apple //c emulation may work, but I have not tried it.
+  * [Leon Bottou](https://github.com/leonbottou)'s "universal" versions of GSPlus and KEGS.
+  * MAME after [this commit](https://github.com/mamedev/mame/commit/31aaae7491ea4233de75456af178054e650f4344).
 
 ## Operation
 
