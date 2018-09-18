@@ -43,9 +43,13 @@ Once you have a ROM chip, generally the instructions [here](http://mirrors.apple
 
 ### Emulator
 
-Copy the ROM into the appropriate location for your emulator.  At the time of writing the only emulator I am aware of that can emulate the //c with memory expansion is [Catakig](http://catakig.sourceforge.net/) for MacOS.  It's a bit older of an emulator but it runs fine on newer MacOSes.
+The following emulators are known to run ROM 4X:
 
-MAME's Apple //c emulation may work, but I have not tried it.
+  * MAME (replace the image for the apple2c4 machine).
+  * kegs-universal from Leon Bottou.  (Also gsplus with patches in pull request #31).
+  * Catakig (older emulator for MacOS, will stop working on Mojave).
+
+Copy the ROM image into the appropriate location for your emulator.
 
 ## Operation
 
