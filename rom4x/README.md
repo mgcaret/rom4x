@@ -46,7 +46,7 @@ Once you have a ROM chip, generally the instructions [here](http://mirrors.apple
 The following emulators are known to run ROM 4X:
 
   * MAME (replace the image for the apple2c4 machine).
-  * kegs-universal from Leon Bottou.  (Also gsplus with patches in pull request #31).
+  * [Leon Bottou](https://github.com/leonbottou)'s "universal" versions of GSPlus and KEGS.
   * Catakig (older emulator for MacOS, will stop working on Mojave).
 
 Copy the ROM image into the appropriate location for your emulator.
