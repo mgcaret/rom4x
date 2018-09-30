@@ -1,16 +1,47 @@
 .psc02
 .code
 .include "iic.defs"
-          .org reset4x
+          .org rom4x_disp
+.proc     dispatch
+          cmp #$a9                  ; reset patch
+          bne :+
+          bra reset4x
+:         cmp #$ea                  ; boot patch
+          bne :+
+          jmp boot4x
+:         dec a                     ; $01 = new boot fail routine
+          bne :+
+          jmp nbtfail
+          ; TODO: Dispatch XModem stuff here
+:         lda #>(monitor-1)
+          pha
+          lda #<(monitor-1)
+          pha
+          jmp swrts2                ; jump to monitor
+.endproc
+
+; next is snippet of code to boot external 5.25
+.proc   bootext
+          lda #$e0
+          ldy #$01                    ; unit #
+          ldx #$60                    ; slot #
+          jmp $c60b                   ; jump into Disk II code
+.endproc
+
+.proc     reset4x
           stz power2 + rx_mslot     ; action = normal boot
           asl butn1                 ; closed apple
           bcs ckdiag
-exitrst:  jmp gorst4x               ; return to RESET.X
+exitrst:  lda #>(rst4xrtn-1)
+          pha
+          lda #<(rst4xrtn-1)
+          pha
+          jmp swrts2
 ; check to see if both apples are down
 ckdiag:   bit butn0                 ; open apple
           bmi exitrst               ; return to RESET.X
 ; present menu because only closed apple is down
-menu4x:   jsr gobanner              ; "Apple //c"
+menu4x:   jsr ntitle                ; "Apple //c"
           ldx #$00                  ; menu start
           jsr disp                  ; show it
           jsr gtkey
@@ -38,6 +69,9 @@ ckkey2:   sec
           stz softev + 1            ; deinit coldstart
           stz pwerdup               ; ditto
           bra exitrst
+.endproc
+
+.proc     gtkey
 gtkey:    lda #$60
           sta ($0),y                ; cursor
           sta kbdstrb               ; clr keyboard
@@ -45,8 +79,11 @@ kbdin:    lda kbd                   ; get key
           bpl kbdin
           sta kbdstrb               ; clear keyboard
           sta ($0),y                ; put it on screen
-          rts
+          rts  
+.endproc
+
 ; display message, input x = message start relative to msg1
+.proc     disp
 disp:     stz $0                    ; load some safe defaults
           lda #$04
           sta $1
@@ -66,7 +103,10 @@ disp2:    sta $1                    ; write address high
           sta $0                    ; write address low
           inx                       ; set next msg byte
           bra disp0                 ; back to the beginning
-confirm:  pha
+.endproc
+
+.proc     confirm
+          pha
           ldx #(msg3-msg1)          ; ask confirm
           jsr disp
           jsr gtkey
@@ -77,6 +117,8 @@ confirm:  pha
           txa
           plp
           rts
+.endproc
+
 ; msg format
 ; A byte < $20 indicates high byte of address.
 ; Next byte must be low byte of address. Anything
@@ -97,10 +139,8 @@ msg2:     .byte $07,$db,"ROM 4X 05/27/17"
 msg3:      .byte $05,$b0,"SURE? ",$00
 
 ; Boot4X - the boot portion of the program
-.assert   * < boot4x, warning, .sprintf("Boot4X overrun! * = %x, > %x", *, boot4x)
-          .res boot4x - *, 0
-          .org boot4x
-          jsr gobanner              ; "Apple //c"
+.proc     boot4x
+          jsr ntitle                ; "Apple //c"
           jsr rdrecov               ; try to recover ramdisk
           lda power2 + rx_mslot     ; get action saved by reset4x
           beq :+                    ; unset, go look for config on ram card
@@ -115,7 +155,7 @@ msg3:      .byte $05,$b0,"SURE? ",$00
           phx                       ; config present, save it and move on
           lda #'C'                  ; tell user
           sta $7d1                  ; on screen
-selboot:  ldx #(msg2-msg1)          ; short banner offset
+selboot:  ldx #(msg2-msg1)          ; short offset
           jsr disp                  ; display it
           pla                       ; get boot selection from stack
           ;sta $7d2
@@ -150,7 +190,7 @@ btc7:     cmp #$07                  ; boot ext drive
           bne boot4                 ; none of the above
           ; copy small routine to $800 to boot
           ; external 5.25
-          ldy #(bt4xend-bootext+1)
+          ldy #.sizeof(bootext)
 btc7lp:   lda bootext,y
           sta $800,y
           dey
@@ -165,8 +205,15 @@ boot6:    lda #$c6                  ; boot slot 6
 bootsl:   ldx #$00                  ; low byte of slot
 bootadr:  stx $0                    ; store address
           sta $1                    ; return to bank 0 does jmp (0)
-endbt4x:  jmp gobt4x                ; continue boot
-rdrecov:  jsr rdinit                ; init ramcard
+endbt4x:  lda #>(bt4xrtn-1)
+          pha
+          lda #<(bt4xrtn-1)
+          pha
+          jmp swrts2
+.endproc
+
+.proc     rdrecov
+          jsr rdinit                ; init ramcard
           lda pwrup,y               ; get power up flag
           cmp #pwrbyte              ; already initialized?
           beq recovdn               ; exit if initialized
@@ -188,8 +235,11 @@ rdrecov:  jsr rdinit                ; init ramcard
           lda #'R'                  ; tell user
           sta $7d0                  ; on screen
 recovdn:  rts
+.endproc
+
 ; zero ram card space
-rdclear:  jsr rdinit                ; init ramcard
+.proc     rdclear
+          jsr rdinit                ; init ramcard
           jsr testsize              ; get size
           lda numbanks,y            ; # of 64Ks to write
           beq clrdone               ; no memory
@@ -217,16 +267,28 @@ clrdone:  ldx #rx_mslot
           lda #$a0                  ; ' '
           sta $400                  ; clear progress
           rts
-rdinit:   bit rx_mslot*$100         ; activate registers
+.endproc
+
+.proc     rdinit
+          bit rx_mslot*$100         ; activate registers
           ldy #rx_mslot             ; slot offset
           ldx #rx_devno             ; register offset
           rts
-; next is snippet of code to boot external 5.25
-bootext:        lda #$e0
-        ldy #$01                    ; unit #
-        ldx #$60                    ; slot #
-        jmp $c60b                   ; jump into Disk II code
-bt4xend = *
+.endproc
+
+; arrange a sequence of RTS tricks to display title screen
+.proc   ntitle
+        lda #>(swrts2-1)        ; put return addr of swrts/swrts2 on stack
+        pha
+        lda #<(swrts2-1)
+        pha
+        lda #>(banner-1)        ; put addr of the Title routine on the stack
+        pha
+        lda #<(banner-1)
+        pha
+        jmp swrts2              ; jump to swrts2
+.endproc
+
 ; --------------------------------------------------
 ; config getter
 ; values and locs
@@ -346,4 +408,22 @@ fname_ = *
         rts
 .endproc
 
-
+; Display new boot failure message and jump to BASIC
+.proc   nbtfail
+        ldx #msglen
+lp1:    lda bootmsg,x
+        ora #$80
+        sta $7d0+19-(<msglen/2),x
+        dex
+        bpl lp1
+        lda #23		; last line
+        sta cv
+        lda #>(basic-1)
+        pha
+        lda #<(basic-1)
+        pha
+        jmp swrts2
+bootmsg:
+        .byte "No bootable device."
+msglen = * - bootmsg - 1
+.endproc

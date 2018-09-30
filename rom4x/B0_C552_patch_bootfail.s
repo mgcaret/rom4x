@@ -10,9 +10,5 @@
 	.byte 0			; rom4x present
 cbtfail:	jsr setvid
 	jsr setkbd
-	lda #>(nbtfail-1)
-	pha
-	lda #<(nbtfail-1)
-	pha
-	jmp swrts2
-	
+	lda #$01                ; cmd = boot fail1
+	jmp $c7fc               ; to dispatcher

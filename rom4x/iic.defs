@@ -39,15 +39,11 @@ rx_mslot = rx_slot + $c0
 rx_devno = rx_slot * $10 + $88
 
 ; entry points
-gorst4x = $c763		; switch to/from reset4x
-gobt4x = gorst4x + 6	; switch to/from boot4x
-gobanner = gobt4x + 6	; banner from bank 1
+gorst4x = $cff9		; reset patch destination
+gobt4x = $cffa		; boot patch destination
 rst4xrtn = $facb	; where to return from reset4x
-;bt4xrtn = $fb12	; where to return from boot4x
 bt4xrtn = $fb19		; where to return from boot4x
-reset4x = $e000		; reset routine
-boot4x = $e180		; boot routine
-nbtfail = $e400		; new boot fail
+rom4x_disp = $e000	; main dispatch code
 banner = $fb60		; 'Apple //c'
 testsize = $d99f	; test ramdisk size (rom 3 = $d995)
 monitor = $ff59		; monitor
