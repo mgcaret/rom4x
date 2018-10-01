@@ -1,3 +1,6 @@
+; options
+EN_XMODEM = 1 	; comment out to disable XModem support
+
 ; hardware
 rombank = $c028
 butn0 = $c061

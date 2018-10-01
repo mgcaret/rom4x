@@ -1,6 +1,9 @@
 .psc02
 .code
 .include "iic.defs"
+
+; to enable/disable XModem, see EN_XMODEM in iic.defs
+
           .org rom4x_disp
 .proc     dispatch
           cmp #$a9                  ; reset patch
@@ -9,11 +12,26 @@
 :         cmp #$ea                  ; boot patch
           bne :+
           jmp boot4x
-:         dec a                     ; $01 = new boot fail routine
+:         cmp #$01                  ; $01 = new boot fail routine
           bne :+
           jmp nbtfail
-          ; TODO: Dispatch XModem stuff here
-:         lda #>(monitor-1)
+.ifdef EN_XMODEM
+          ; XModem functions
+:         cmp #$02                  ; $02 = AppleSoft SAVE
+          bne :+
+          jmp asftsave
+:         cmp #$03                  ; $03 = AppleSoft LOAD
+          bne :+
+          jmp asftload
+:         cmp #$F0                  ; $F0 = monitor W(rite)
+          bne :+
+          jmp monwrite
+:         cmp #$EB                  ; $EB = monitor R(ead)
+          bne :+
+          jmp monread
+.endif
+:         sta $00                   ; for debug, comment if not using
+          lda #>(monitor-1)
           pha
           lda #<(monitor-1)
           pha
@@ -134,9 +152,10 @@ msg1 = *
           .byte $04,$2e,"6 Boot Int. 5.25"
           .byte $04,$ae,"7 Boot Ext. 5.25"
           .byte $07,$5f,"By M.G."
-msg2:     .byte $07,$db,"ROM 4X 05/27/17"
+msg2:     .byte $07,$db,"ROM 4X 10/01/18"
           .byte $05,$ae,$00                ; cursor pos in menu
-msg3:      .byte $05,$b0,"SURE? ",$00
+msg3:     .byte $05,$b0,"SURE? ",$00
+          .dword .time              ; embed POSIX build time
 
 ; Boot4X - the boot portion of the program
 .proc     boot4x
@@ -427,3 +446,8 @@ bootmsg:
         .byte "No bootable device."
 msglen = * - bootmsg - 1
 .endproc
+
+.ifdef EN_XMODEM
+  .include "inc/xmodem.s"
+.endif
+
