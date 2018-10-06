@@ -68,7 +68,7 @@ ZPSTART   = $00
 lastblk   = ZPSTART+0   ; flag for last block
 blkno     = ZPSTART+1   ; block number 
 errcnt    = ZPSTART+2   ; error counter 10 is the limit
-bflag     = ZPSTART+3   ; block flag 
+bflag     = ZPSTART+3   ; block flag, indicate block 1 received 
 
 crc       = ZPSTART+4   ; CRC lo byte  (two byte variable)
 crch      = ZPSTART+5   ; CRC hi byte  
@@ -95,6 +95,7 @@ VARTAB    = $69         ; start of variables (usually same as PRGEND)
 LINNUM    = $50         ; line number, usable as temporary storage
 
 FIXLINKS  = $D4F2       ; AppleSoft routine to re-link program
+SCRTCH    = $D64B       ; AppleSoft "SCRTCH" - erase program, reset everything
 PRERR     = $FF2D       ; print "ERR" and beep
 
 
@@ -107,12 +108,17 @@ KBDSTR    = $C010       ; keyboard strobe
 ENOERR    = $00         ; no error
 ENOSTK    = $D0         ; not enough free stack
 EFAILED   = $FF         ; failed due to too many errors
-ECANCEL   = $FE         ; transfer cancelled
-EMMBLK    = $FC         ; block number complement mismatch
+ECANCEL   = $FE         ; transfer cancelled, receive memory changed
 EBLKMM    = $FD         ; block number mismatch
+EMMBLK    = $FC         ; block number complement mismatch
+ECANCELOK = $FB         ; transfer cancelled, receive memory unchanged or send
 
 
+ACIA_SLOT = 2          ; slot # of the ACIA, //c: 1=printer, 2=modem
 
+; defining STANDALONE allow one to build a test version of the code .orged
+; at $4000 in order to test the basic bits of the code without doing a full
+; firmware build.  Even works on the enhanced //e with SSC.
 ; comment out if going to //c firmware
 ;STANDALONE = 1
 
@@ -154,7 +160,7 @@ CPMEOF  = $1A  ; CP/M EOF char, which is the correct padding
 ; By Daryl Rictor, August 8, 2002
 ;
 ; v1.0  released on Aug 8, 2002.
-; MG's IIc version released ~Sep/Oct 2018
+; MG's IIc version released Oct 2018
 ;
 ;
 
@@ -172,31 +178,43 @@ CPMEOF  = $1A  ; CP/M EOF char, which is the correct padding
 ; AppleSoft BASIC save/load
 asftsave:   jsr asftprgio
             sec
-            jsr xmentry         ; AppleSoft tape code doesn't check for errors, either
+            jsr xmentry         ; AppleSoft tape SAVE doesn't check for errors
+            bcs monerr          ; but we will
 .ifdef STANDALONE
             rts
 .else
-            ; //c aux bank code
             jmp swrts2
 .endif
             
 asftload:   jsr asftprgio       ; current length does not matter
             clc
             jsr xmentry
-            lda A2L             ; A2L/H have exact end address
+            sta $300
+            bcs loaderr         ; if error, execute NEW
+            lda A2L             ; otherwise A2L/H have exact end address
             ldy A2H             ; regardless of appended junk
-            sta VARTAB
+            sta VARTAB          ; mark end of program/start of vars
             sty VARTAB+1
 .ifdef STANDALONE
-            jmp FIXLINKS        ; re-link the program
+            jmp FIXLINKS        ; finally, re-link the program
 .else
             ; //c aux bank code
-            lda #>(FIXLINKS-1)
+            lda #>(FIXLINKS-1)  ; indirectly if in aux ROM
             pha
             lda #<(FIXLINKS-1)
             pha
             jmp swrts2
 .endif
+
+loaderr:    cmp #ECANCELOK      ; program memory unchanged?
+            beq :+              ; yes, don't clear program
+                                ; (in case user accidentally used LOAD)
+            lda #>(SCRTCH-1)    ; otherwise set up RTS trick for SCRTCH ('NEW')
+            pha                 ; whether we are in aux ROM or RAM
+            lda #<(SCRTCH-1)
+            pha
+:           bra monerr          ; print ERR first
+
 
 ; set up A1L/H and A2L/H for applesoft program save/load
 ; this is exactly what AppleSoft does for tapes
@@ -287,6 +305,7 @@ XModemSend: lda #$17            ; 'W' inverse
             sta errcnt          ; will count retries left
             stz lastblk         ; set flag to false
             lda #$01
+            sta bflag           ; if user cancels, we haven't changed memory
             sta blkno           ; set block # to 1
 Wait4CRC:   lda #$ff            ; 3 seconds
             sta retry2          ;
@@ -408,7 +427,11 @@ ChkCancel:  lda KBD             ; see if ESC has been hit by user
             lda #ESC            ; send escape
             jsr Put_Chr         ; to the remote end
 SxCancel:   jsr Flush           ; flush receive stream
-            lda #ECANCEL        ; and indicate a transfer cancelled
+            lda bflag           ; did user memory change?
+            beq :+              ; other error code if so
+            lda #ECANCELOK      ; otherwise tell user all is OK
+            rts
+:           lda #ECANCEL        ; and indicate a transfer cancelled
             rts
 ;
 ;
@@ -425,9 +448,11 @@ StartCrc:   lda #'C'            ; "C" start with CRC mode
             jsr Put_Chr         ; send it
             lda #$FF    
             sta retry2          ; set loop counter for ~3 sec delay
-            lda #$00  
-            sta crc 
-            sta crch            ; init CRC value  
+            ;lda #$00  
+            ;sta crc 
+            ;sta crch            ; init CRC value  
+            stz crc
+            stz crch
             jsr GetByte         ; wait for input
             bcs GotByte         ; byte received, process it
             jsr ChkCancel
@@ -435,7 +460,7 @@ StartCrc:   lda #'C'            ; "C" start with CRC mode
             sta STLOC
             dec errcnt          ; next try
             bne StartCrc        ; resend "C" if more tries
-            beq SxCancel        ; otherwise cancel send
+            beq SxCancel        ; otherwise cancel it
 
 StartBlk:   jsr ChkCancel       ; see if user wants to quit first
             lda #$FF            ; 
@@ -561,11 +586,10 @@ BlkStatus:  lda blkno           ; put block # mod 8 in status display
 ; You would call the ACIA_Init prior to running the xmodem transfer
 ; routine.
 ;
-; //c Modem Port ACIA:
-ACIA_Data    = $C0A8
-ACIA_Status  = $C0A9
-ACIA_Command = $C0AA
-ACIA_Control = $C0AB
+ACIA_Data    = $C088+(ACIA_SLOT*$10)
+ACIA_Status  = $C089+(ACIA_SLOT*$10)
+ACIA_Command = $C08A+(ACIA_SLOT*$10)
+ACIA_Control = $C08B+(ACIA_SLOT*$10)
 
 SPD_19_2_8N1 = $1F
 SPD_115_2_8N1 = $10
@@ -601,8 +625,9 @@ Put_Chr1:   lda ACIA_Status     ; serial port status
 ;
 ;
 ;
-GetByte:    lda #$00            ; wait for chr input and cycle timing loop
-            sta retry           ; set low value of timing loop
+GetByte:    ;lda #$00            ; wait for chr input and cycle timing loop
+            ;sta retry           ; set low value of timing loop
+            stz retry
 StartCrcLp: jsr Get_Chr         ; get chr from serial port, don't wait 
             bcs GetByte1        ; got one, so exit
             dec retry           ; no character received, so dec counter
@@ -624,9 +649,11 @@ Flush1:     jsr GetByte         ; read the port
 ;  CRC subroutines 
 ;
 ;
-CalcCRC:    lda #$00            ; yes, calculate the CRC for the 128 bytes
-            sta crc             ;
-            sta crch            ;
+CalcCRC:    ;lda #$00            ; yes, calculate the CRC for the 128 bytes
+            ;sta crc             ;
+            ;sta crch            ;
+            stz crc             ; save 2 bytes with 'C02 code
+            stz crch            ; 
             ldy #$02            ;
 CalcCRC1:   lda Rbuff,y         ;
             eor   crc+1         ; Quick CRC computation with lookup tables
