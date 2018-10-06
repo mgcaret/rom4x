@@ -189,7 +189,7 @@ asftsave:   jsr asftprgio
 asftload:   jsr asftprgio       ; current length does not matter
             clc
             jsr xmentry
-            sta $300
+            ; sta $300          ; DEBUG, comment out for release
             bcs loaderr         ; if error, execute NEW
             lda A2L             ; otherwise A2L/H have exact end address
             ldy A2H             ; regardless of appended junk

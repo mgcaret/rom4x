@@ -9,7 +9,7 @@ DISPATCH = $C7FC
         .org $CFE5 ; 20 bytes here
 .ifdef EN_XMODEM
 lp:     jsr  GETNUM
-        sta  $00
+        ;sta  $00       ; DEBUG, comment out for release
         cmp  #$EB       ; 'R'
         beq :+
         cmp  #$F0       ; 'W'
