@@ -272,8 +272,10 @@ xmentry:    php                 ; Save carry status to select op
             lda #ENOSTK         ; flag not enough stack 
             sec                 ; and error out
             rts
-:           jsr ACIA_Init       ; set up ACIA
-            plp                 ; and get carry status back
+:           bit butn1           ; check closed apple key
+            bmi :+              ; and if held, don't set up ACIA
+            jsr ACIA_Init       ; set up ACIA
+:           plp                 ; and get carry status back
             ldx #ZPEND          ; save ZP locations we are trashing on stack
 savelp:     lda ZPSTART,x
             pha
