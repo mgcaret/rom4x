@@ -11,6 +11,7 @@ It adds the following features to the Apple //c:
     - Tell the machine to boot the SmartPort, the internal floppy drive, or an external floppy drive.
     - The system drops to BASIC if no bootable device is found (this is the default behavior in the IIc Plus).
     - Configure default boot device by saving a file on the RAM Disk.
+    - As of the 10/01/2018 release, provides XModem-CRC features (see [xmodem.md](xmodem.md)).
 
 RAM expansion cards known to work with ROM 4X include the Apple Memory Expansion Card (but no battery!), and the A2Heaven [RAM Express II](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=146) for the original //c, and the [RAM Express II+](http://a2heaven.com/webshop/index.php?rt=product/product&product_id=144) for the memory-expandable //c and IIc Plus.
 
@@ -113,6 +114,10 @@ This skips the RAM disk and starts booting with the internal 5.25 drive.
 This is like option 6, but using an external 5.25 drive.  The only OS I am aware of that supports booting this way is ProDOS.
 
 This destructively copies a short routine to $800, which under most circumstances is also immediately overwritten by the boot sector, so should not be a problem..
+
+#### XModem-CRC
+
+See [xmodem.md](xmodem.md).
 
 ### Configuration File
 
