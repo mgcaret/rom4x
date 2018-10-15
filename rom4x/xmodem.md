@@ -12,6 +12,8 @@ The XModem-CRC functionality has been tested between the Apple //c and a PC runn
 
 By default the data is sent at 115,200 bps 8N1.  If you want to keep the current serial port speed/bits setting, hold the Closed Apple key while pressing the RETURN key for the below commands.  Note that if the serial port is configured for 7 bit data, the transfer will fail.
 
+**Caveats**:  An XModem block is 128 bytes, and that is the minimum size that will be transmitted (extra filled with Ctrl+Z) and received (extra is copied to memory!).  In the case of the receiver, multiples of 128 bytes (124 for first block) of memory will be overwritten as each block is received.  4 bytes are added to the transmitted data for a header (see below).  So sending between 1 and 124 bytes of data will overwrite 124 bytes in the target machine's memory, but sending 125 bytes will overwrite 252 bytes!  Keep this in mind!
+
 ### AppleSoft BASIC
 
 To send the current program through the modem port, type `SAVE`.  A 'W' will appear in the upper right corner of the screen, and after several seconds will start flashing.  The save routine will wait approximately one minute for a receiver to be ready, otherwise it will exit and say "ERR".  If you accidentally type SAVE, hit the ESC key and you will be returned to AppleSoft (again, with 'ERR').  Once the transfer starts, the upper right corner will cycle from 0 through 7 as each block is received (this is the lower 3 bits of the block number).
