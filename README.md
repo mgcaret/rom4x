@@ -14,6 +14,7 @@ It adds the following features to the Apple //c and IIc Plus firmware:
   - IIc only:
     - The system drops to BASIC if no bootable device is found (this is the default behavior in the IIc Plus).
     - Configure default boot device by saving a file on the RAM Disk.
+    - [XModem-CRC](rom4x/xmodem.md) support.
   - IIc Plus only:
     - Menu control the built-in accelerator.
     - Accelerator settings persist across resets.
