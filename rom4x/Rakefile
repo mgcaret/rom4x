@@ -50,8 +50,16 @@ task :checksum_rom => source_rom do
   puts "Source ROM appears correct!"
 end
 
+desc "Build Date"
+task :build_date do
+  sh %q(printf '.byte "%s"' "$(date +%D)" > build_date.inc)
+end
+
 desc "Assemble all source files"
-task :assemble => source_files.ext('.b')
+task :assemble_source => source_files.ext('.b')
+
+desc "Assemble ROM4X"
+task :assemble => [:build_date, :assemble_source]
 
 rule ".o" => ".s" do |t|
   sh "ca65 -l #{t.name}.lst #{t.source}"

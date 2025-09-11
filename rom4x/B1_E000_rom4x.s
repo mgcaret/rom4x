@@ -96,11 +96,12 @@ ckkey2:   sec
           sbc #$b0                  ; ascii->number
           bmi menu4x                ; < 0 not valid
           bit jdm                   ; check for ROMxc+
-          bmi :+
-          cmp #$08
-          bpl menu4x                ; > 7 not valid
-:         cmp #$09
-          bpl menu4x                ; > 8 not valid either
+          bmi :+                    ; yes, we accept 0-8
+          cmp #$08                  ; otherwise, accept 0-7
+          bcs menu4x                ; >= 8 not valid
+:         cmp #$09                  ; 9 or more?
+          bcs menu4x                ; >= 9 not valid either
+          cmp #$08                  ; is it exactly 8?
           beq romxc                 ; is 8, do ROMxc+ menu
           sta power2 + rx_mslot     ; for boot4x
           stz softev + 1            ; deinit coldstart
@@ -184,11 +185,12 @@ msgc:     .byte $07,$86,"5 Boot SmartPort"
           .byte $04,$2e,"6 Boot Int. 5.25"
           .byte $04,$ae,"7 Boot Ext. 5.25"
           .byte $07,$5f,"By M.G."
-msg2:     .byte $07,$db,"ROM 4X 10/01/25"
+msg2:     .byte $07,$db,"ROM 4X "
+          .include "build_date.inc"
           .byte $05,$ae,$00                ; cursor pos in menu
 msg3:     .byte $05,$b0,"SURE? ",$00
 msg4:     .byte $05,$17,"8 ROMxc+",$00     ; after "0 Monitor"
-msg1b:    .byte $07,$06,"4 Boot xDrive",$FF,msgc-msg1 ; jumps to msgc
+msg1b:    .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
 .assert *-msg1 <= 255, error, "boot menu too big"
           .dword .time              ; embed POSIX build time
 
@@ -227,8 +229,9 @@ btc3:     cmp #$03                  ; Diags
           bne btc4
           jmp $c7c4
 btc4:     cmp #$04                  ; RX diags or boot xdrive
-          jsr xdrive_detect         ; is there an xdrive?
-          beq boot4                 ; XDrive present, boot slot 4
+          bne btc5
+          jsr xdrive_detect         ; is there an Xdrive?
+          beq boot4                 ; Xdrive present, boot slot 4
 :         ldx #$ff
           txs                       ; reset stack
           jsr rdinit                ; get x and y loaded
@@ -493,19 +496,19 @@ msglen = * - bootmsg - 1
   .include "inc/xmodem.s"
 .endif
 
-; Enter with C=0 for detect, C=1 for menu
+; Enter with C=0 for detect XDrive and ROMXc+, C=1 for ROMXC+ menu
 ; if C=0, set jdm to %ab000000 where:
 ; a=1 if ROMxc+ present
 ; b=1 if xDrive present
 .proc   jdmicro
         stz jdm         ; clear jdm
-        bcs :+
+        php
+        bcs :+          ; skip Xdrive detect if doing menu
         jsr xdrive_detect
-        bne :+
-        ror jdm         ; put xdrive bit into jdm & clear carry
-:       php             ; save carry state
+        bne :+          ; if no xdrive
+        ror jdm         ; put xdrive bit into jdm
         ; now copy ROMXc+ detection
-        ldy #jdm_romx_len
+:       ldy #jdm_romx_len
 :       lda jd_romx_addr,y
         sta detcode,y
         dey
