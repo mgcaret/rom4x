@@ -34,6 +34,7 @@ sl_devno = $778
 softev = $3f2
 pwerdup = $3f4
 cv = $25
+jdm = $2ff ; for storing detected JD micro hardware
 
 ; values
 pwrbyte = $a5

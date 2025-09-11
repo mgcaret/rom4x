@@ -46,7 +46,7 @@ task :checksum_rom => source_rom do
   require 'digest'
 
   sha256 = Digest::SHA256.file source_rom
-  fail "ROM checksum failed" unless sha256.hexdigest == source_rom_sha256
+  fail "ROM checksum failed #{sha256.hexdigest} != #{source_rom_sha256}" unless sha256.hexdigest == source_rom_sha256
   puts "Source ROM appears correct!"
 end
 
@@ -92,6 +92,11 @@ end
 desc "Build SST27SF512 Image"
 task :sf512 => [:build_rom] do
   sh "cat #{dest_rom} #{dest_rom} > sf512_#{dest_rom}"
+end
+
+desc "Program SST27SF512"
+task :program_sf512 => [:sf512] do
+  sh "minipro -p 'SST27SF512@DIP28' -w sf512_iic_rom4x.bin"
 end
 
 desc "Build disributable ZIP"

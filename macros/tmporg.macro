@@ -1,0 +1,21 @@
+.macro      tmporg addr
+tmporg_con  .set 0
+.if .const(*)
+tmporg_con  .set 1
+tmporg_cur  .set *
+.endif
+            .org addr
+tmporg_s    .set *
+.endmacro
+
+.macro      endtmporg name
+tmporg_e    .set *
+.ifnblank   name
+name = tmporg_e-tmporg_s
+.endif
+.if tmporg_con = 0
+.reloc
+.else
+            .org tmporg_cur+(tmporg_e-tmporg_s)
+.endif
+.endmacro
