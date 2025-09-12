@@ -11,7 +11,7 @@ detcode   = $300 ; where to put dectect subroutines in RAM
 .proc     dispatch
           cmp #$a9                  ; reset patch
           beq reset4x
-:         cmp #$ea                  ; boot patch
+          cmp #$ea                  ; boot patch
           bne :+
           jmp boot4x
 :         cmp #$01                  ; $01 = new boot fail routine
@@ -232,7 +232,7 @@ btc4:     cmp #$04                  ; RX diags or boot xdrive
           bne btc5
           jsr xdrive_detect         ; is there an Xdrive?
           beq boot4                 ; Xdrive present, boot slot 4
-:         ldx #$ff
+          ldx #$ff
           txs                       ; reset stack
           jsr rdinit                ; get x and y loaded
           stx sl_devno              ; diags need this
