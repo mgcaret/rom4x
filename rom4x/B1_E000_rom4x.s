@@ -82,16 +82,13 @@ menu4x:   jsr ntitle                ; "Apple //c"
           txs
           bra dispatch::gomon
 ckkey1:   bit jdm
-          bvc :+                    ; no xDrive, prompt user
-          cmp #$b2                  ; "2" - ignore it here
-          beq menu4x                ; redisplay menu
-          bra ckkey2
-:         cmp #$b2                  ; "2"
+          bvs ckkey2                ; Xdrive present, skip confirmation
+          cmp #$b2                  ; "2"
           beq doconf
           cmp #$b4                  ; "4"
           bne ckkey2
-doconf:   jsr confirm
-          bne menu4x                ; go back to menu4x
+doconf:   jsr confirm               ; confirm destructive operations
+          bne menu4x                ; go back to menu4x if not confirmed
 ckkey2:   sec
           sbc #$b0                  ; ascii->number
           bmi menu4x                ; < 0 not valid
@@ -190,7 +187,8 @@ msg2:     .byte $07,$db,"ROM 4X "
           .byte $05,$ae,$00                ; cursor pos in menu
 msg3:     .byte $05,$b0,"SURE? ",$00
 msg4:     .byte $05,$17,"8 ROMxc+",$00     ; after "0 Monitor"
-msg1b:    .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
+msg1b:    .byte $06,$06,"2 Config Xdrive"
+          .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
 .assert *-msg1 <= 255, error, "boot menu too big"
           .dword .time              ; embed POSIX build time
 
@@ -198,10 +196,11 @@ msg1b:    .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
 ; Boot4X - the boot portion of the program
 .proc     boot4x
           jsr ntitle                ; "Apple //c"
-          jsr xdrive_detect         ; check for xdrive, Z=1 if there
+          clc
+          jsr xdrive_detect         ; check for Xdrive, Z=1 if there
           bne :+                    ; no, do not try to recover ram disk
           lda power2 + rx_mslot     ; get action saved by reset4x
-          beq boot4                 ; with xdrive, just boot slot 4 if no selection
+          beq boot4a                ; with Xdrive, just boot slot 4 if no selection
           pha                       ; wastes a byte, I ugess
           bra selboot
 :         jsr rdrecov               ; try to recover ramdisk
@@ -221,15 +220,21 @@ msg1b:    .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
 selboot:  ldx #(msg2-msg1)          ; short offset
           jsr disp                  ; display it
           pla                       ; get boot selection from stack
-btc2:     cmp #$02                  ; clear ramcard
+btc2:     cmp #$02                  ; clear ramcard or xdrive config
           bne btc3
-          jsr rdclear               ; do clear
-          bra boot4
+          clc
+          jsr xdrive_detect         ; is there an Xdrive?
+          bne :+                    ; nope, clear ramcard
+          sec
+          jmp xdrive_detect         ; launch XDrive menu
+:         jsr rdclear               ; do clear
+boot4a:   bra boot4
 btc3:     cmp #$03                  ; Diags
           bne btc4
           jmp $c7c4
-btc4:     cmp #$04                  ; RX diags or boot xdrive
+btc4:     cmp #$04                  ; RX diags or boot Xdrive
           bne btc5
+          clc
           jsr xdrive_detect         ; is there an Xdrive?
           beq boot4                 ; Xdrive present, boot slot 4
           ldx #$ff
@@ -504,7 +509,7 @@ msglen = * - bootmsg - 1
         stz jdm         ; clear jdm
         php
         bcs :+          ; skip Xdrive detect if doing menu
-        jsr xdrive_detect
+        jsr xdrive_detect ; carry is clear already
         bne :+          ; if no xdrive
         ror jdm         ; put xdrive bit into jdm
         ; now copy ROMXc+ detection
@@ -518,6 +523,7 @@ msglen = * - bootmsg - 1
         ror jdm         ; put romx bit into jdm
         rts
 .endproc
+; enter with C=0 for detect, C=1 for config menu
 .proc   xdrive_detect
         ldy #jd_xdrive_len
 :       lda jd_xdrive_addr,y
@@ -530,9 +536,11 @@ msglen = * - bootmsg - 1
 ; detection routines for ROMxc+ and xDrive, to be called in RAM from aux ROM
 jd_xdrive_addr = *
         tmporg detcode
-; sets Z+C flag if XDrive present, -Z if not
+; C=0: detect: sets Z+C flag if XDrive present, -Z if not
+; C=1: attempt to launch XDrive config menu
 .proc   jd_xdrive
         sta $C028       ; main ROM
+        bcs menu
         lda $C4F0       ; check signature bytes
         cmp #$CA
         bne :+
@@ -540,6 +548,8 @@ jd_xdrive_addr = *
         cmp #$CD
 :       sta $C028       ; back to aux ROM
         rts
+menu:   stz $C0C4
+        jmp $C987
 .endproc
         endtmporg jd_xdrive_len
 .assert jd_xdrive_len < 128, error, "jd_xdrive_len too big"
@@ -578,5 +588,3 @@ romxmenu:
 .endproc
         endtmporg jdm_romx_len
 .assert jdm_romx_len < 128, error, "jdm_romx_len too big"
-
-
