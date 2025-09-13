@@ -186,7 +186,7 @@ msg2:     .byte $07,$db,"ROM 4X "
           .include "build_date.inc"
           .byte $05,$ae,$00                ; cursor pos in menu
 msg3:     .byte $05,$b0,"SURE? ",$00
-msg4:     .byte $05,$17,"8 ROMxc+",$00     ; after "0 Monitor"
+msg4:     .byte $05,$17,"8 ROMXc",$00     ; after "0 Monitor"
 msg1b:    .byte $06,$06,"2 Config Xdrive"
           .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
 .assert *-msg1 <= 255, error, "boot menu too big"
