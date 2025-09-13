@@ -37,7 +37,7 @@ The shell script will perform the following:
 
 ### Real System
 
-Burn the ROM image (generally named iic_rom4x.bin) onto a 27C256 chip, or burn twice (into the lower and upper halves) of a 27C512 chip.  If you can obtain an SST27SF512 flash EEPROM, that is a great option.
+Burn the ROM image (generally named iic_rom4x.bin) onto a 27C256 chip, or burn twice (into the lower and upper halves) of a 27C512 chip.  If you can obtain an SST27SF512 flash EEPROM, that is a great option.  The `sf512` rake target will produce a doubled ROM image.  If you have Linux, the `minipro` binary in your path, and a TL866 programmer with an SST27SF512 installed, the `program_sf512` target will program the chip.
 
 Once you have a ROM chip, generally the instructions [here](http://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/Manuals/Apple%20IIc%20v4%20ROM%20Upgrade%20Installation.pdf) are relevant.  You won't need to cut any traces or solder a jumper unless you are installing this ROM in an original //c.
 
