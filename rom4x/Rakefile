@@ -52,7 +52,7 @@ end
 
 desc "Build Date"
 task :build_date do
-  sh %q(printf '.byte "%s"' "$(date +%D)" > build_date.inc)
+  sh %q(printf '.byte "%s"\n' "$(date +%D)" > build_date.inc)
 end
 
 desc "Assemble all source files"
