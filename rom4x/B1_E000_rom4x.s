@@ -3,7 +3,7 @@
 .include "iic.defs"
 .include "../macros/tmporg.macro"
 
-detcode   = $300 ; where to put dectect subroutines in RAM
+detcode   = $300 ; where to put detect subroutines in RAM
 
 ; to enable/disable XModem, see EN_XMODEM in iic.defs
 
@@ -576,6 +576,7 @@ romxmenu:
 .endproc
 ; activateromx returns Z=1 & C=1 if ROMx was activated
 .proc   activateromx
+        bit $C0E0       ; make accelerators sync up for some cycles
         bit $FACA       ; ROMx activation sequence
         bit $FACA
         bit $FAFE

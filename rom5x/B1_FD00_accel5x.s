@@ -607,6 +607,7 @@ msg1 = ::amenu1
 msg2 = ::amenu2
 .endif
 .endproc ; AMENU
+.endif
 ; check for run into vector and ROM checksum area
 .assert * < $ffe0, error, "accel5x overran $ffe0"
-.endif
+.out .sprintf("  accel5x end %x; size: %d; left: %d", *-1, *-$fd00, $ffe0-*)

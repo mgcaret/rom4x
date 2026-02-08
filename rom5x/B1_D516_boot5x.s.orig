@@ -1,7 +1,6 @@
 .code
 .psc02
-;  ROM patch boot5x - ROM 5X boot routines bgn d516, max size 234
-;  ROM patch boot5x - ROM 5X boot routines end d5f1; size: 220 of 234, 14 left
+
 .include "../macros/rompatch.macro"
 .include "iic+.defs"
 rompatch boot5x,234,"boot5x - ROM 5X boot routines"

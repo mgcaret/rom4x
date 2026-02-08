@@ -1,3 +1,5 @@
+require 'open-uri'
+
 rom_url = 'https://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc/ROM%20Images/Apple%20IIc%20ROM%2004%20-%20341-0445-B.bin'
 source_rom = 'iic_rom4.bin'
 source_rom_sha256 = '8ad5e6c4ed15d09b62183965b6c04762610d4b26510afc1896bdb4ecc55da883'
@@ -30,12 +32,11 @@ end
 
 desc 'Obtain ROM'
 rule source_rom do
-  require 'open-uri'
-  
   puts "Downloading ROM..."
   
   File.open(source_rom, "wb") do |romfile|
-    open(rom_url) do |wwwfile|
+    uri = URI.parse(rom_url)
+    uri.open do |wwwfile|
       romfile.write(wwwfile.read)
     end
   end

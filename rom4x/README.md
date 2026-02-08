@@ -96,11 +96,11 @@ there is not (and this is one of the noticeable changes), you will get dropped
 to BASIC without the need to press ctrl+reset.  If things don't go well, revisit
 your installation.
 
-For RAM expansion users: If you don't have an initialized RAM disk, format the card RAM disk with
-something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on it.  Power off the
-machine, and power it on after a few minutes.  You should boot off of the RAM
-disk.  You might notice an "R" flash on the screen for an instant before ProDOS
-loads.
+For RAM expansion users: If you don't have an initialized RAM disk, format the
+card RAM disk with something like Copy II Plus.  Put ProDOS and BASIC.SYSTEM on
+it.  Power off the machine, and power it on after a few minutes.  You should
+boot off of the RAM disk.  You might notice an "R" flash on the screen for an
+instant before ProDOS loads.
 
 Now, press Control+Closed-Apple+Reset, holding down Closed-Apple after releasing
 reset.  If you have no JD Micro hardware, you should see the following menu
