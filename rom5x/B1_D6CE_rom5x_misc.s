@@ -102,7 +102,7 @@ go_jdm: php
 msg1 = *
         .byte $05,$06,"0 Mon"
         .ifdef jdm_romx
-        .byte $05,$0F,"8 ROMX" ; no room for c/c+
+        .byte $05,$1A,"8 ROMX" ; no room for c/c+
         .else
         .byte "itor"
         .endif

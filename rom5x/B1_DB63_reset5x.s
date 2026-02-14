@@ -39,13 +39,13 @@ ckkey2:   cmp #$b7		; "7"
           bra menu
 ckkey3:   sec
           sbc #$b0		; ascii->number
-          bmi menu		; < 0 not valid
+          ; bmi menu		; (not needed?) < 0 not valid
           .ifdef jdm_romx
-          cmp #$08      ; romx build has 8th option
+          cmp #$09      ; romx build has 8th option so >= 9 not valid
           .else
-          cmp #$07
+          cmp #$08      ; >= 8 not valid
           .endif
-          bpl menu		; > 7 not valid
+          bcs menu
           sta power2 + rx_mslot	; for boot5x
           stz softev + 1		; deinit coldstart
           stz pwerdup		; ditto
