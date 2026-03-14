@@ -1,7 +1,8 @@
 .code
 .psc02
-;  ROM patch boot5x - ROM 5X boot routines bgn d516, max size 234
-;  ROM patch boot5x - ROM 5X boot routines end d5f1; size: 220 of 234, 14 left
+
+.define dbgselect 0 ; if 1, enable some code to put user-selected option # on screen
+
 .include "../macros/rompatch.macro"
 .include "iic+.defs"
 rompatch boot5x,234,"boot5x - ROM 5X boot routines"
@@ -12,7 +13,12 @@ rompatch boot5x,234,"boot5x - ROM 5X boot routines"
           lda power2 + rx_mslot         ; get action saved by reset5x
           beq boot4                     ; if zero, continue boot
           jsr bann5x                    ; display ROM 5X footer
-          lda power2 + rx_mslot         ; boot selection
+          lda power2 + rx_mslot         ; boot selection again
+          .if dbgselect
+          ora #$30
+          sta $6D0+39
+          lda power2 + rx_mslot
+          .endif
 btc2:     cmp #$02                      ; clear ramcard / configure Xdrive
           bne btc3
           .ifdef jdm_xdrive

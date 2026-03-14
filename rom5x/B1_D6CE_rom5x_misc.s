@@ -1,13 +1,8 @@
 .code
 .psc02
 
-; Bytes left with:
-; - No JDM options: 32
-; - romx: 2
-; - xdrive: 13
-; - both: 7
-
 jdmcode = $300 ; where to put JDM device subroutines in RAM
+.define jdmdebug 0   ; if 1, modify screen for ROMx activation, costs 3 bytes
 
 .include "../macros/rompatch.macro"
 .include "../macros/tmporg.macro"
@@ -99,6 +94,7 @@ go_jdm: php
 ; Next byte must be low byte of address. Anything
 ; else are characters to display and will have their
 ; upper bit inverted before being written to the screen.
+; If either JDM option is active, we abbreviate a lot.
 msg1 = *
         .byte $05,$06,"0 Mon"
         .ifdef jdm_romx
@@ -146,19 +142,22 @@ msg3:   .byte $05,$b0,"SURE? ",$00
         .word  .version
 .if .defined(jdm_romx) || .defined(jdm_xdrive)
         jdm_addr = *
-        tmporg $0300
+        tmporg jdmcode
         .proc jdm
         ; enter from aux ROM with carry set = ROMX menu, clear=Xdrive config
         sta $C028       ; main ROM
-        bcs go_romx
-        stz $C0C4       ; activate Xdrive ROM
-        jmp $C987       ; launch menu
-go_romx:
         bit $C0E0       ; hit IWM so accelerator does some synchronous cycles
+        bcc go_xdrive
         bit $FACA       ; ROMx activation sequence
         bit $FACA
         bit $FAFE
+        .if jdmdebug
+        inc $6D0+38     ; put a ! on the screen
+        .endif
         jmp $DFD0       ; go to ROMxc+ menu
+go_xdrive:
+        stz $C0C4       ; activate Xdrive ROM
+        jmp $C987       ; launch menu
         .endproc
         endtmporg jdm_len
         .assert jdm_len < 128, error, "jdm_len too big"
