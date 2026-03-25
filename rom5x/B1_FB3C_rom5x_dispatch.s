@@ -1,7 +1,9 @@
 .code
 .psc02
+
+.include "../macros/rompatch.macro"
 .include "iic+.defs"
-          .org  $fb3c ; ~165 bytes free here
+rompatch $fb3c,165,"dispatch5x - ROM 5X dispatch routines/beep fix"
 .proc     dispatch
           cmp   #$a9		      ; reset patch
           bne   :+
@@ -49,3 +51,4 @@ owait3:   sbc   #$01
 .endproc
 
 .assert * <= $fc00, error, "ROM 5X dispatch overruns $fc00"
+endpatch

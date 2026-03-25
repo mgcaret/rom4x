@@ -15,27 +15,40 @@ rompatch boot5x,234,"boot5x - ROM 5X boot routines"
           jsr bann5x                    ; display ROM 5X footer
           lda power2 + rx_mslot         ; boot selection again
           .if dbgselect
-          ora #$30
-          sta $6D0+39
-          lda power2 + rx_mslot
+          pha
+          ora #$30                      ; make inverse digit
+          sta $6D0+39                   ; put on screen
+          pla
           .endif
-btc2:     cmp #$02                      ; clear ramcard / configure Xdrive
-          bne btc3
+          asl
+          tax
+          lsr
+          .ifdef jdm_romx
+          sec                           ; make sure option 7 goes to ROMX menu
+          .endif
+          jmp (jtab-2,x)
+jtab:     .word boot4                   ; 1: continue boot, ramdisk first
+          .word sel2                    ; 2: either ram disk clear or xdrive config
+          .word $c7c4                   ; 3: diagnostics
           .ifdef jdm_xdrive
+          .word bootcx                  ; 4: just boot slot 4 if xdrive
+          .else
+          .word rdiags                  ; 4: do RAM disk diags if no xdrive
+          .endif
+          .word bootcx                  ; 5: boot slot 5 - 3.5/smartport
+          .word bootcx                  ; 6: boot slot 6 - 5.25
+          .word boot4                   ; 7: should not get here, but just boot
+          .ifdef jdm_romx
+          .word jdmm5x                  ; 8: launch ROMX menu
+          .endif
+sel2:     .ifdef jdm_xdrive
           clc
           jmp jdmm5x
           .else
           jsr rdclear                   ; do clear
-          bra boot4
+          bra boot4                     ; then boot
           .endif
-btc3:     cmp #$03                      ; Diags
-          bne btc4
-          jmp $c7c4
-btc4:     cmp #$04                      ; RX diags / boot Xdrive
-          .ifdef jdm_xdrive
-          beq bootcx
-          .else
-          bne btc5
+rdiags:   .ifndef jdm_xdrive
           ldx #$ff
           txs                           ; reset stack
           jsr rdinit                    ; get x and y loaded
@@ -46,26 +59,19 @@ btc4:     cmp #$04                      ; RX diags / boot Xdrive
           lda #<(monitor-1)             ; exit card test into
           pha                           ; the monitor
           lda numbanks,y                ; get the card size in banks
-          bne dordiag                   ; do diag if memory present
+          bne :+                        ; do diag if memory present
           jmp swrts2                    ; otherwise jump to monitor
-dordiag:  jmp $db3a                     ; diags
+:         jmp $db3a                     ; diags
           .endif
-btc5:     cmp #$05                      ; boot smartport
-          beq bootcx
-          cmp #$06                      ; boot 5.25
-          beq bootcx
-          .ifdef jdm_romx
-          cmp #$08
-          bne boot4
-          sec
-          jmp jdmm5x
-          .endif
-          ; fall through to default boot if none of the above
+          ; fall through to default boot
 boot4:    lda #rx_mslot                 ; boot slot 4 (should be, anyway)
 bootcx:   ora #$c0                      ; convert to slot addr high byte if needed
           ldx #$00                      ; low byte of slot
 bootadr:  stx $0                        ; store address
           sta $1                        ; return to bank 0 does jmp (0)
+          .if dbgselect
+          sta $6D0+38
+          .endif
 endbt4x:  lda #>(bt5xrtn-1)
           pha
           lda #<(bt5xrtn-1)
