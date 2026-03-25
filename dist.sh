@@ -1,16 +1,19 @@
-#!/bin/bash
-# Script to zip the built images
-rm -f "romXx_dist-*.zip"
-ROM4X="rom4x/iic_rom4x.bin"
-ROM5X="rom5x/iic+_rom5x.bin"
+#!/bin/bash -x
+# Script to zip/tarball the built images
+ext=.tar.bz2
+cmd="tar cvjf"
+if [ "$1" == "zip" ]; then
+  ext=.zip
+  cmd=zip
+fi
+files=$(ls rom4x/iic_rom4x*.bin rom5x/iic+_rom5x*.bin)
 case `uname -s` in
 Linux)
-	FNAME="romXx_dist-`date --rfc-3339=date`.zip"
+	FNAME="rom4x5x_dist-`date --rfc-3339=date`${ext}"
 	;;
 *)
-	FNAME="romXx_dist-`date '+%Y-%M-%d'`.zip"
+	FNAME="rom4x5x_dist-`date '+%Y-%M-%d'`${ext}"
 	;;
 esac
-[ -f "${ROM4X}" ] && zip "${FNAME}" "${ROM4X}"
-[ -f "${ROM5X}" ] && zip "${FNAME}" "${ROM5X}"
-
+rm -f $FNAME
+$cmd $FNAME $files

@@ -1,9 +1,30 @@
+require 'optparse'
+require 'open-uri'
+
 rom_url = 'https://mirrors.apple2.org.za/Apple%20II%20Documentation%20Project/Computers/Apple%20II/Apple%20IIc%20plus/ROM%20Images/Apple%20IIc%20plus%20ROM%2005%20-%20342-0625-A%20-%201988.bin'
 source_rom = 'iic+_rom5.bin'
 source_rom_sha256 = '5a62070f6a0b07784681d4df4bf2ce88b2809bec0cbaa65fcb963e804ed60374'
-dest_rom = 'iic+_rom5x.bin'
-distzip = 'iic+_rom5x.zip'
 rom_base = 0xc000
+jdm_romx = false
+jdm_xdrive = false
+generic_storage = false
+
+jdm_opts = ENV["jdm"].split(',') rescue []
+jdm_opts.each do |opt|
+  case opt
+  when "romx"
+    jdm_romx = true
+  when "xdrive"
+    jdm_xdrive = true
+  else
+    abort "unknown jdm option: #{opt}"
+  end
+end
+generic_storage = ENV["generic_storage"].to_i(10) != 0 rescue false # not used yet
+
+basename = "iic+_rom5x#{jdm_romx ? "_romx" : ""}#{jdm_xdrive ? "_xdrive" : ""}"
+dest_rom = "#{basename}.bin"
+distzip = "#{basename}.zip"
 
 source_files = Rake::FileList.new('*.s')
 
@@ -18,8 +39,8 @@ end
 
 desc "Clean object files"
 task :clean do
-  sh "rm -f #{dest_rom}"
-  sh "rm -f sf512_#{dest_rom}"
+  sh "rm -f #{basename}*.bin"
+  sh "rm -f sf512_#{basename}*.bin"
   sh "rm -f *.o"
   sh "rm -f *.lst"
   sh "rm -f *.b"
@@ -27,17 +48,16 @@ task :clean do
   sh "rm -f POOF1 *.po"
   sh "rm -f rom.sha256"
   sh "rm -f make_rom.sh"
-  sh "rm -f #{distzip}"
+  sh "rm -f #{basename}*.zip"
 end
 
 desc 'Obtain ROM'
 rule source_rom do
-  require 'open-uri'
-  
   puts "Downloading ROM..."
-  
+
   File.open(source_rom, "wb") do |romfile|
-    open(rom_url) do |wwwfile|
+    uri = URI.parse(rom_url)
+    uri.open do |wwwfile|
       romfile.write(wwwfile.read)
     end
   end
@@ -52,11 +72,19 @@ task :checksum_rom => source_rom do
   puts "Source ROM appears correct!"
 end
 
+desc "Build Date"
+task :build_date do
+  sh %q(printf '.byte "%s"\n' "$(date +%D)" > build_date.inc)
+end
+
 desc "Assemble all source files"
-task :assemble => source_files.ext('.b')
+task :assemble_source => source_files.ext('.b')
+
+desc "Assemble ROM5X"
+task :assemble => [:build_date, :assemble_source]
 
 rule ".o" => ".s" do |t|
-  sh "ca65 -l #{t.name}.lst #{t.source}"
+  sh "ca65 -l #{t.name}.lst #{t.source} #{jdm_romx ? "-D jdm_romx" : ""} #{jdm_xdrive ? "-D jdm_xdrive" : ""} #{generic_storage ? "-D generic_storage" : ""}"
 end
 
 rule ".b" => ".o" do |t|
@@ -85,7 +113,7 @@ task :build_rom => [:assemble, :checksum_rom] do
       puts "\tNote: patched over #{nzc} nonzero bytes!" if nzc > 0
     else
       puts "I dont know where to load #{t}"
-    end 
+    end
   end
   File.write(dest_rom, rom)
   puts "ROM image done: #{dest_rom}"
@@ -112,15 +140,15 @@ desc "Build disributable ZIP"
 task :build_zip => [:build_rom] do
   require 'digest'
   require 'date'
-  
+
   sha256 = Digest::SHA256.file dest_rom
   shafile = <<EOF
 #{source_rom_sha256}  #{source_rom}
 #{sha256.hexdigest}  #{dest_rom}
 EOF
-  
+
   dd_cmds = []
-  
+
   puts "Building distributable ZIP..."
   obj_files = Rake::FileList.new('*.b')
   obj_files.each do |t|
@@ -132,9 +160,9 @@ EOF
       sh "zip #{distzip} #{t}"
     end
   end
-  
+
   puts "Creating maker script..."
-  
+
   script = <<EOF
 #!/bin/bash
 set -e
@@ -162,7 +190,6 @@ EOF
 
   File.write('rom.sha256', shafile)
   File.write('make_rom.sh', script)
-  
+
   sh "zip #{distzip} rom.sha256 make_rom.sh"
 end
-

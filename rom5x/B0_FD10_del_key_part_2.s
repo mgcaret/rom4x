@@ -5,6 +5,6 @@
 .include "iic+.defs"
   .org $fd10
   bra :+            ; skip over the patch
-	lda #$88          ; replace with left arrow code
+  lda #$88          ; replace with left arrow code
   bra $fd7c         ; branch back out of the patch
 :

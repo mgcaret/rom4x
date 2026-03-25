@@ -1,22 +1,54 @@
 .code
 .psc02
+
+.define dbgselect 0 ; if 1, enable some code to put user-selected option # on screen
+
+.include "../macros/rompatch.macro"
 .include "iic+.defs"
-          .org boot5x ; 234 bytes available, code assembles to 220
+rompatch boot5x,234,"boot5x - ROM 5X boot routines"
           jsr titl5x                    ; "Apple IIc +"
+          .ifndef jdm_xdrive
           jsr rdrecov                   ; try to recover ramdisk
+          .endif
           lda power2 + rx_mslot         ; get action saved by reset5x
           beq boot4                     ; if zero, continue boot
           jsr bann5x                    ; display ROM 5X footer
-          lda power2 + rx_mslot         ; boot selection
-btc2:     cmp #$02                      ; clear ramcard
-          bne btc3
+          lda power2 + rx_mslot         ; boot selection again
+          .if dbgselect
+          pha
+          ora #$30                      ; make inverse digit
+          sta $6D0+39                   ; put on screen
+          pla
+          .endif
+          asl
+          tax
+          lsr
+          .ifdef jdm_romx
+          sec                           ; make sure option 7 goes to ROMX menu
+          .endif
+          jmp (jtab-2,x)
+jtab:     .word boot4                   ; 1: continue boot, ramdisk first
+          .word sel2                    ; 2: either ram disk clear or xdrive config
+          .word $c7c4                   ; 3: diagnostics
+          .ifdef jdm_xdrive
+          .word bootcx                  ; 4: just boot slot 4 if xdrive
+          .else
+          .word rdiags                  ; 4: do RAM disk diags if no xdrive
+          .endif
+          .word bootcx                  ; 5: boot slot 5 - 3.5/smartport
+          .word bootcx                  ; 6: boot slot 6 - 5.25
+          .word boot4                   ; 7: should not get here, but just boot
+          .ifdef jdm_romx
+          .word jdmm5x                  ; 8: launch ROMX menu
+          .endif
+sel2:     .ifdef jdm_xdrive
+          clc
+          jmp jdmm5x
+          .else
           jsr rdclear                   ; do clear
-          bra boot4
-btc3:     cmp #$03                      ; Diags
-          bne btc4
-          jmp $c7c4
-btc4:     cmp #$04                      ; RX diags
-          bne btc5
+          bra boot4                     ; then boot
+          .endif
+rdiags:   .ifndef jdm_xdrive
           ldx #$ff
           txs                           ; reset stack
           jsr rdinit                    ; get x and y loaded
@@ -27,19 +59,19 @@ btc4:     cmp #$04                      ; RX diags
           lda #<(monitor-1)             ; exit card test into
           pha                           ; the monitor
           lda numbanks,y                ; get the card size in banks
-          bne dordiag                   ; do diag if memory present
+          bne :+                        ; do diag if memory present
           jmp swrts2                    ; otherwise jump to monitor
-dordiag:  jmp $db3a                     ; diags
-btc5:     cmp #$05                      ; boot smartport
-          beq bootcx
-          cmp #$06                      ; boot 5.25
-          beq bootcx
-          ; fall through to default boot if none of the above
+:         jmp $db3a                     ; diags
+          .endif
+          ; fall through to default boot
 boot4:    lda #rx_mslot                 ; boot slot 4 (should be, anyway)
 bootcx:   ora #$c0                      ; convert to slot addr high byte if needed
           ldx #$00                      ; low byte of slot
 bootadr:  stx $0                        ; store address
           sta $1                        ; return to bank 0 does jmp (0)
+          .if dbgselect
+          sta $6D0+38
+          .endif
 endbt4x:  lda #>(bt5xrtn-1)
           pha
           lda #<(bt5xrtn-1)
@@ -47,6 +79,7 @@ endbt4x:  lda #>(bt5xrtn-1)
           lda $1
           jmp swrts2
 ; try to recover RAM disk
+.ifndef jdm_xdrive
 .proc     rdrecov
           jsr rdinit                    ; init ramcard
           lda pwrup,y                   ; get power up flag
@@ -108,3 +141,5 @@ clrdone:  ldx #rx_mslot
           ldx #rx_devno                 ; register offset
           rts
 .endproc
+.endif ; .ifndef jdm_xdrive
+endpatch

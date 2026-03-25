@@ -1,15 +1,17 @@
 .psc02
 .code
 .include "iic.defs"
+.include "../macros/tmporg.macro"
+
+detcode   = $300 ; where to put detect subroutines in RAM
 
 ; to enable/disable XModem, see EN_XMODEM in iic.defs
 
           .org rom4x_disp
 .proc     dispatch
           cmp #$a9                  ; reset patch
-          bne :+
-          bra reset4x
-:         cmp #$ea                  ; boot patch
+          beq reset4x
+          cmp #$ea                  ; boot patch
           bne :+
           jmp boot4x
 :         cmp #$01                  ; $01 = new boot fail routine
@@ -30,16 +32,16 @@
           bne :+
           jmp monread
 .endif
-:         sta $00                   ; for debug, comment if not using
-          lda #>(monitor-1)
+:         sta $00                   ; for debug, why did we get here?
+gomon:    lda #>(monitor-1)         ; go to the system monitor
           pha
           lda #<(monitor-1)
           pha
           jmp swrts2                ; jump to monitor
 .endproc
 
-; next is snippet of code to boot external 5.25
-.proc   bootext
+; next is snippet of code to boot external 5.25, must be at $800
+.proc     bootext
           lda #$e0
           ldy #$01                    ; unit #
           ldx #$60                    ; slot #
@@ -47,9 +49,9 @@
 .endproc
 
 .proc     reset4x
-          stz power2 + rx_mslot     ; action = normal boot
+          stz power2 + rx_mslot     ; clear boot selection (0=normal boot)
           asl butn1                 ; closed apple
-          bcs ckdiag
+          bcs ckdiag                ; check open apple next, or fall through to normal reset
 exitrst:  lda #>(rst4xrtn-1)
           pha
           lda #<(rst4xrtn-1)
@@ -58,35 +60,53 @@ exitrst:  lda #>(rst4xrtn-1)
 ; check to see if both apples are down
 ckdiag:   bit butn0                 ; open apple
           bmi exitrst               ; return to RESET.X
+          clc
+          jsr jdmicro               ; detect JD Micro stuff
 ; present menu because only closed apple is down
 menu4x:   jsr ntitle                ; "Apple //c"
-          ldx #$00                  ; menu start
+          bit jdm                   ; check for ROMxc+
+          bpl :+                    ; nope
+          ldx #(msg4-msg1)          ; yes, display menu item #8
+          jsr disp
+:         ldx #(msg1-msg1)          ; menu start, better be 0
           jsr disp                  ; show it
+          ldx #(msg1a-msg1)         ; anticipate no xDrive
+          bit jdm                   ; check for xDrive
+          bvc :+                    ; if no xDrive...
+          ldx #(msg1b-msg1)         ; have xDrive, adjust menu
+:         jsr disp
           jsr gtkey
           cmp #$b0                  ; "0"
           bne ckkey1
           ldx #$ff                  ; reset stack
           txs
-          lda #>(monitor-1)         ; monitor entry on stack
-          pha
-          lda #<(monitor-1)
-          pha
-          jmp swrts2                ; rts to enter monitor
-ckkey1:   cmp #$b2                  ; "2"
+          bra dispatch::gomon
+ckkey1:   bit jdm
+          bvs ckkey2                ; Xdrive present, skip confirmation
+          cmp #$b2                  ; "2"
           beq doconf
           cmp #$b4                  ; "4"
           bne ckkey2
-doconf:   jsr confirm
-          bne menu4x                ; go back to menu4x
+doconf:   jsr confirm               ; confirm destructive operations
+          bne menu4x                ; go back to menu4x if not confirmed
 ckkey2:   sec
           sbc #$b0                  ; ascii->number
           bmi menu4x                ; < 0 not valid
-          cmp #$08
-          bpl menu4x                ; > 7 not valid
+          bit jdm                   ; check for ROMxc+
+          bmi :+                    ; yes, we accept 0-8
+          cmp #$08                  ; otherwise, accept 0-7
+          bcs menu4x                ; >= 8 not valid
+:         cmp #$09                  ; 9 or more?
+          bcs menu4x                ; >= 9 not valid either
+          cmp #$08                  ; is it exactly 8?
+          beq romxc                 ; is 8, do ROMxc+ menu
           sta power2 + rx_mslot     ; for boot4x
           stz softev + 1            ; deinit coldstart
           stz pwerdup               ; ditto
           bra exitrst
+romxc:    sec
+          jsr jdmicro               ; launch ROMxc+ menu
+          bra menu4x                ; if we get here, it didn't work, go display menu
 .endproc
 
 .proc     gtkey
@@ -112,7 +132,12 @@ disp0:    lda msg1,x                ; get message byte
 disp1:    inx                       ; next byte either way
           cmp #$20                  ; ' '
           bcc disp2                 ; start of ptr if < 20 
-          eor #$80                  ; invert high bit
+          cmp #$FF                  ; "GOTO"?
+          bne :+                    ; nope
+          lda msg1,x                ; get new X
+          tax
+          bra disp0                 ; move on
+:         eor #$80                  ; invert high bit
           sta ($0),y                ; write to mem
           inc $0                    ; inc address low byte
           bra disp0                 ; back to the beginning
@@ -142,51 +167,76 @@ disp2:    sta $1                    ; write address high
 ; Next byte must be low byte of address. Anything
 ; else are characters to display and will have their
 ; upper bit inverted before being written to the screen.
+;
+; The menu is constructed as follows:
+; Standard IIc: msg1 + msg1a
+; XDrive:       msg1 + msg1b
+; ROMxc+:       above + msg4
 msg1 = *
           .byte $05,$06,"0 Monitor"
           .byte $05,$86,"1 Reboot"
-          .byte $06,$06,"2 Zero RAM Card and Reboot"
-          .byte $06,$86,"3 Diagnostics"
-          .byte $07,$06,"4 RAM Card Diagnostics"
-          .byte $07,$86,"5 Boot SmartPort"
+          .byte $06,$86,"3 System Diags.",$00 ; out of order to support JD Micro
+msg1a:    .byte $06,$06,"2 Zero RAM Card and Reboot"
+          .byte $07,$06,"4 RAM Card Diags."
+msgc:     .byte $07,$86,"5 Boot SmartPort"
           .byte $04,$2e,"6 Boot Int. 5.25"
           .byte $04,$ae,"7 Boot Ext. 5.25"
           .byte $07,$5f,"By M.G."
-msg2:     .byte $07,$db,"ROM 4X 10/01/18"
+msg2:     .byte $07,$db,"ROM 4X "
+          .include "build_date.inc"
           .byte $05,$ae,$00                ; cursor pos in menu
 msg3:     .byte $05,$b0,"SURE? ",$00
+msg4:     .byte $05,$17,"8 ROMXc",$00     ; after "0 Monitor"
+msg1b:    .byte $06,$06,"2 Config Xdrive"
+          .byte $07,$06,"4 Boot Xdrive",$FF,msgc-msg1 ; jumps to msgc
+.assert *-msg1 <= 255, error, "boot menu too big"
           .dword .time              ; embed POSIX build time
+
 
 ; Boot4X - the boot portion of the program
 .proc     boot4x
           jsr ntitle                ; "Apple //c"
-          jsr rdrecov               ; try to recover ramdisk
+          clc
+          jsr xdrive_detect         ; check for Xdrive, Z=1 if there
+          bne :+                    ; no, do not try to recover ram disk
+          lda power2 + rx_mslot     ; get action saved by reset4x
+          beq boot4a                ; with Xdrive, just boot slot 4 if no selection
+          pha                       ; wastes a byte, I ugess
+          bra selboot
+:         jsr rdrecov               ; try to recover ramdisk
           lda power2 + rx_mslot     ; get action saved by reset4x
           beq :+                    ; unset, go look for config on ram card
           pha                       ; save it
           bra selboot               ; now go do it
 :         lda numbanks,y            ; (y should be set in rdrecov) ram card present?
-          beq boot6                 ; nope, boot slot 6
+          beq boot6                 ; nope, boot slot 6 (it will fall through to slot 5)
           jsr getcfg                ; try to get config
           bcs boot4                 ; no config, normal boot
-          ;stx $7d2
-          ;sty $7d3
-          phx                       ; config present, save it and move on
+          ;stx $7d2 ; debug
+          ;sty $7d3 ; debug
+          phx                       ; config present, save selection and move on
           lda #'C'                  ; tell user
           sta $7d1                  ; on screen
 selboot:  ldx #(msg2-msg1)          ; short offset
           jsr disp                  ; display it
           pla                       ; get boot selection from stack
-          ;sta $7d2
-btc2:     cmp #$02                  ; clear ramcard
+btc2:     cmp #$02                  ; clear ramcard or xdrive config
           bne btc3
-          jsr rdclear               ; do clear
-          bra boot4
+          clc
+          jsr xdrive_detect         ; is there an Xdrive?
+          bne :+                    ; nope, clear ramcard
+          sec
+          jmp xdrive_detect         ; launch XDrive menu
+:         jsr rdclear               ; do clear
+boot4a:   bra boot4
 btc3:     cmp #$03                  ; Diags
           bne btc4
           jmp $c7c4
-btc4:     cmp #$04                  ; RX diags
+btc4:     cmp #$04                  ; RX diags or boot Xdrive
           bne btc5
+          clc
+          jsr xdrive_detect         ; is there an Xdrive?
+          beq boot4                 ; Xdrive present, boot slot 4
           ldx #$ff
           txs                       ; reset stack
           jsr rdinit                ; get x and y loaded
@@ -451,3 +501,91 @@ msglen = * - bootmsg - 1
   .include "inc/xmodem.s"
 .endif
 
+; Enter with C=0 for detect XDrive and ROMXc+, C=1 for ROMXC+ menu
+; if C=0, set jdm to %ab000000 where:
+; a=1 if ROMxc+ present
+; b=1 if xDrive present
+.proc   jdmicro
+        stz jdm         ; clear jdm
+        php
+        bcs :+          ; skip Xdrive detect if doing menu
+        jsr xdrive_detect ; carry is clear already
+        bne :+          ; if no xdrive
+        ror jdm         ; put xdrive bit into jdm
+        ; now copy ROMXc+ detection
+:       ldy #jdm_romx_len
+:       lda jd_romx_addr,y
+        sta detcode,y
+        dey
+        bpl :-
+        plp             ; get carry back
+        jsr jd_romx     ; detect or activate ROMxc+ menu
+        ror jdm         ; put romx bit into jdm
+        rts
+.endproc
+; enter with C=0 for detect, C=1 for config menu
+.proc   xdrive_detect
+        ldy #jd_xdrive_len
+:       lda jd_xdrive_addr,y
+        sta detcode,y
+        dey
+        bpl :-
+        jmp jd_xdrive
+.endproc
+
+; detection routines for ROMxc+ and xDrive, to be called in RAM from aux ROM
+jd_xdrive_addr = *
+        tmporg detcode
+; C=0: detect: sets Z+C flag if XDrive present, -Z if not
+; C=1: attempt to launch XDrive config menu
+.proc   jd_xdrive
+        sta $C028       ; main ROM
+        bcs menu
+        lda $C4F0       ; check signature bytes
+        cmp #$CA
+        bne :+
+        lda $C4F1
+        cmp #$CD
+:       sta $C028       ; back to aux ROM
+        rts
+menu:   stz $C0C4
+        jmp $C987
+.endproc
+        endtmporg jd_xdrive_len
+.assert jd_xdrive_len < 128, error, "jd_xdrive_len too big"
+jd_romx_addr = *
+        tmporg detcode
+; detect ROMXc+ if C=0, launch ROMXc+ menu if C=1
+; for detect, return C=1 if ROMX present
+.proc   jd_romx
+        sta $C028       ; main ROM
+        bcs romxmenu
+        jsr activateromx
+        beq :+          ; C=1 if Z=1
+        clc
+:       lda $F851       ; deactivate ROMX if it was activated
+        sta $C028       ; back to aux ROM
+        rts
+romxmenu:
+        jsr activateromx
+        bne :+          ; if not activated!
+        jmp $DFD0
+:       sta $C028       ; back to aux ROM
+        clc             ; shouldn't need this but just in case
+        rts             ; it wasn't activated, return
+.endproc
+; activateromx returns Z=1 & C=1 if ROMx was activated
+.proc   activateromx
+        bit $C0E0       ; make accelerators sync up for some cycles
+        bit $FACA       ; ROMx activation sequence
+        bit $FACA
+        bit $FAFE
+        lda $DFFE
+        cmp #$4A
+        bne :+
+        lda $DFFF
+        cmp #$CD
+:       rts
+.endproc
+        endtmporg jdm_romx_len
+.assert jdm_romx_len < 128, error, "jdm_romx_len too big"

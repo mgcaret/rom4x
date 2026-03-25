@@ -3,6 +3,7 @@
 *.bin
 *.swp
 *.zip
+*.tar.bz2
 *.o
 *.lst
 *.b
@@ -12,4 +13,6 @@ rom5x/accel5x
 make_rom.sh
 rom.sha256
 **/.DS_Store
+**/.kate-swp
+build_date.inc
 

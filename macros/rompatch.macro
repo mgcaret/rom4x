@@ -1,0 +1,22 @@
+.macro  rompatch addr,maxsize,desc
+  patchstart = addr
+  .org patchstart
+  patchmsize = maxsize
+  .define patchdesc desc
+  .if patchmsize > 0
+    .out .sprintf("  ROM patch %s bgn %x, max size %d", patchdesc, patchstart, patchmsize)
+  .else
+    .out .sprintf("  ROM patch %s bgn %x, max size unconstrained", patchdesc, patchstart)
+  .endif
+.endmacro
+
+; use at end of patch, displays info about the patch
+; and checks for over-size patch
+.macro  endpatch
+  .if patchmsize > 0
+    .out .sprintf("  ROM patch %s end %x; size: %d of %d, %d left", patchdesc, *-1, *-patchstart, patchmsize, patchmsize-*+patchstart)
+    .assert * <= (patchstart+patchmsize), error, .sprintf("  ROM patch %s code too big", patchdesc)
+  .else
+    .out .sprintf("  ROM patch %s end %x; size: %d", patchdesc, *-1, *-patchstart)
+  .endif
+.endmacro

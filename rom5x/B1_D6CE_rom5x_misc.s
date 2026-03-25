@@ -1,12 +1,24 @@
 .code
 .psc02
+
+jdmcode = $300 ; where to put JDM device subroutines in RAM
+.define jdmdebug 0   ; if 1, modify screen for ROMx activation, costs 3 bytes
+
+.include "../macros/rompatch.macro"
+.include "../macros/tmporg.macro"
 .include "iic+.defs"
-        .org misc5x ; max 306 bytes
+rompatch misc5x,306,"misc5x - ROM 5X miscellaneous"
         bra domenu		; Display menu
         bra dobann		; Display banner (title + By MG)
         bra gtkey		; get a key
         bra confirm		; ask SURE?
         bra ntitle		; display "Apple IIc +"
+        .if .defined(jdm_romx) || .defined(jdm_xdrive)
+        bra go_jdm
+        .else
+        rts             ; placeholder so table is the same in non-jdm builds
+        rts
+        .endif
 dobann:	jsr ntitle
         ldx #(msg2-msg1)	; msg display entry point
         jmp disp
@@ -65,25 +77,89 @@ ntitle:	lda #>(swrts2-1)	; put return addr of swrts/swrts2 on stack
         pha
         lda #<(banner-1)
         pha
-        jmp swrts2		; jump to swrts2
+        jmp swrts2		    ; jump to swrts2
+.if .defined(jdm_romx) || .defined(jdm_xdrive)
+; copy jdm code to RAM and execute
+go_jdm: php
+        ldy #jdm_len
+:       lda jdm_addr,y
+        sta jdmcode,y
+        dey
+        bpl :-
+        plp                 ; get carry back
+        jmp jdm             ; do xdrive or romx menus
+.endif
 ; msg format
 ; A byte < $20 indicates high byte of address.
 ; Next byte must be low byte of address. Anything
 ; else are characters to display and will have their
 ; upper bit inverted before being written to the screen.
+; If either JDM option is active, we abbreviate a lot.
 msg1 = *
-        .byte $05,$06,"0 Monitor"
+        .byte $05,$06,"0 Mon"
+        .ifdef jdm_romx
+        .byte $05,$1A,"8 ROMX" ; no room for c/c+
+        .else
+        .byte "itor"
+        .endif
         .byte $05,$86,"1 Reboot"
+        .ifdef jdm_xdrive
+        .byte $06,$06,"2 Conf Xdrive"
+        .else
         .byte $06,$06,"2 Zero RAM Card"
+        .endif
         .byte $06,$86,"3 Sys Diags"
+        .ifdef jdm_xdrive
+        .byte $07,$06,"4 Boot Xdrive"
+        .else
         .byte $07,$06,"4 RAM Card Diags"
-        .byte $07,$86,"5 Boot 3.5/SmartPort"
+        .endif
+        .byte $07,$86,"5 Boot 3.5/"
+        .if .defined(jdm_romx) || .defined(jdm_xdrive)
+        .byte "SP"
+        .else
+        .byte "SmartPort"
+        .endif
         .byte $04,$2e,"6 Boot 5.25"
-        .byte $04,$ae,"7 Accelerator"
-        .byte $07,$5f,"By M.G."
-msg2:   .byte $07,$db,"ROM 5X 12/10/17"
+        .byte $04,$ae,"7 Accel"
+        .if .defined(jdm_romx) || .defined(jdm_xdrive)
+        .byte "."
+        .else
+        .byte "erator"
+        .endif
+        .if .defined(jdm_romx) || .defined(jdm_xdrive)
+        .byte $07,$60
+        .else
+        .byte $07,$5f,"By "
+        .endif
+        .byte "M.G."
+msg2:   .byte $07,$db,"ROM 5X "
+        .include "build_date.inc"
         .byte $05,$ae,$00		; cursor pos in menu
 msg3:   .byte $05,$b0,"SURE? ",$00
 ; metadata to identify build conditions
         .dword .time
         .word  .version
+.if .defined(jdm_romx) || .defined(jdm_xdrive)
+        jdm_addr = *
+        tmporg jdmcode
+        .proc jdm
+        ; enter from aux ROM with carry set = ROMX menu, clear=Xdrive config
+        sta $C028       ; main ROM
+        bit $C0E0       ; hit IWM so accelerator does some synchronous cycles
+        bcc go_xdrive
+        bit $FACA       ; ROMx activation sequence
+        bit $FACA
+        bit $FAFE
+        .if jdmdebug
+        inc $6D0+38     ; put a ! on the screen
+        .endif
+        jmp $DFD0       ; go to ROMxc+ menu
+go_xdrive:
+        stz $C0C4       ; activate Xdrive ROM
+        jmp $C987       ; launch menu
+        .endproc
+        endtmporg jdm_len
+        .assert jdm_len < 128, error, "jdm_len too big"
+.endif
+endpatch
